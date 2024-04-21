@@ -19,8 +19,7 @@ return new class extends Migration
             $table->string('apellidom_rsdt', 20)->nullable();
             $table->date('fechanac_rsdt');
             $table->string('telefono_rsdt', 20);
-            $table->string('estado_rsdt', 20);
-            $table->unsignedInteger('usuario_id_rsdt')->nullable();
+            $table->unsignedBigInteger('usuario_id_rsdt')->nullable();
             $table->foreign('usuario_id_rsdt')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
             $table->unsignedInteger('rep_fam_id_rsdt')->nullable();
             $table->foreign('rep_fam_id_rsdt')->references('id_rsdt')->on('residente')->onDelete('cascade')->onUpdate('cascade');
