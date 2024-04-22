@@ -15,6 +15,8 @@
 
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+    <script src="{{ asset('Resources/js/jquery-3.7.1.js') }}"></script>
+    <script src="{{ asset('Resources/js/login.js') }}"></script>
 </head>
 <body>
     <div id="app">
