@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\ResidenteController;
 
 //Rutas para reestablecer contraseña
 Route::get('password/reset', 'App\Http\Controllers\Auth\ForgotPasswordController@showLinkRequestForm')->name('password.request');
@@ -18,4 +19,7 @@ Route::post('/login', [LoginController::class, 'login'])->name('loginNow');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Rutas para residentes
-
+Route::get('/Residentes/create', [ResidenteController::class, 'create'])->name('createRsdt');
+Route::post('/Residentes/index', [ResidenteController::class, 'index'])->name('indexRsdt');
+Route::get('/Residentes', [ResidenteController::class, 'showIndex'])->name('Residentes');
+Route::post('/Residentes/store', [ResidenteController::class, 'store'])->name('storeRsdt');

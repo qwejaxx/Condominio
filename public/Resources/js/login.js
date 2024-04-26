@@ -16,6 +16,7 @@ $(document).ready(function() {
             data: loginData,
             success: function(response)
             {
+                console.log(response);
                 if (response.state)
                 {
                     window.location.href = response.redirect;

@@ -1,4 +1,7 @@
 @extends('layouts.app')
+@section('scripts')
+<script src="{{ asset('Resources/js/login.js') }}"></script>
+@endsection
 @section('content')
     <div>
         <form id="loginForm" method="POST" data-url="{{ route('login') }}">
