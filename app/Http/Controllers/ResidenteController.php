@@ -27,7 +27,7 @@ class ResidenteController extends Controller
             ->leftJoin('residente as rep', 'r.rep_fam_id_rsdt', '=', 'rep.id_rsdt')
             ->leftJoin('users as u', 'r.usuario_id_rsdt', '=', 'id')
             ->whereRaw("CONCAT(r.nombre_rsdt, ' ', r.apellidop_rsdt, ' ', r.apellidom_rsdt) LIKE ?", [$search])
-            ->paginate(1);
+            ->paginate($request->totalResultados);
 
             $response = [
                 'state' => true,

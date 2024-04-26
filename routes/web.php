@@ -20,6 +20,6 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Rutas para residentes
 Route::get('/Residentes/create', [ResidenteController::class, 'create'])->name('createRsdt');
-Route::post('/Residentes/index', [ResidenteController::class, 'index'])->name('indexRsdt');
+Route::get('/Residentes/index', [ResidenteController::class, 'index'])->name('indexRsdt');
 Route::get('/Residentes', [ResidenteController::class, 'showIndex'])->name('Residentes');
 Route::post('/Residentes/store', [ResidenteController::class, 'store'])->name('storeRsdt');

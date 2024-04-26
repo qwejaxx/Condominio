@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Residente;
+use Database\Factories\ResidenteFactory;
 
 class ResidenteSeeder extends Seeder
 {
@@ -44,5 +45,7 @@ class ResidenteSeeder extends Seeder
             'usuario_id_rsdt' => null,
             'rep_fam_id_rsdt' => 2,
         ]);
+
+        ResidenteFactory::new()->count(100)->create();
     }
 }

@@ -24,9 +24,9 @@ return new class extends Migration
             $table->unsignedInteger('rep_fam_id_rsdt')->nullable();
             $table->foreign('rep_fam_id_rsdt')->references('id_rsdt')->on('residente')->onDelete('cascade')->onUpdate('cascade');
             $table->timestamps();
-            /* $table->index('nombre_rsdt');
+            $table->index('nombre_rsdt');
             $table->index('apellidop_rsdt');
-            $table->index('apellidom_rsdt'); */
+            $table->index('apellidom_rsdt');
         });
 
         /* Schema::create('residente', function (Blueprint $table) {

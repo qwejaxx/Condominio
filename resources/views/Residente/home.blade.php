@@ -283,7 +283,7 @@
                                                         </div>
                                                         <div class="d-flex flex-column mb-1">
                                                             <label for="rol" class="label-form">Rol:</label>
-                                                            <select class="form-select-custom mb-1" id="rol"
+                                                            <select class="form-select form-select-sm mb-1" id="rol"
                                                                 name="rol">
                                                                 <option value="Administrador">Administrador</option>
                                                                 <option value="Usuario">Usuario</option>
@@ -306,15 +306,18 @@
 
                                                     <!-- Campo adicional si es representante de familia -->
                                                     <div id="campos_representante">
-                                                        <div class="mb-3">
+                                                        <div class="d-flex flex-column mb-1">
                                                             <label for="rep_fam_id_rsdt"
                                                                 class="label-form">Representante Familiar:</label>
-                                                            <select class="form-select-custom mb-1"
+                                                            <select class="form-select form-select-sm mb-1"
                                                                 id="rep_fam_id_rsdt" name="rep_fam_id_rsdt">
                                                             </select>
                                                         </div>
                                                     </div>
+<<<<<<< HEAD
+=======
 
+>>>>>>> 4acdc273725e4edbd338d7efbe8b0565f617658b
                                                 </div>
                                                 <div class="footer">
                                                     <div id="botonesModal">
@@ -350,7 +353,7 @@
                             </div>
                         </div>
                         <div id="index-error" class="text-small text-center"></div>
-                        <div id="index-table" class="">
+                        <div id="index-table">
                             <div class="table-responsive rounded shadow-sm">
                                 <table id="tabla"
                                     class="table text-nowrap table-sm table-striped table-bordered text-center align-middle table-hover m-0">
@@ -369,19 +372,22 @@
                                 </table>
                             </div>
                         </div>
-                        <div class="mt-3">
+                        <div id="seccionTotalResultados" class="mt-3">
                             <nav class="row g-3 justify-content-between">
                                 <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 col-xxl-3">
-                                    <ul id="paginacion" class="pagination pagination-sm justify-content-center justify-content-sm-start m-0">
-                                        
+                                    <ul id="pagination-container"
+                                        class="pagination pagination-sm justify-content-center justify-content-sm-start m-0">
                                     </ul>
                                 </div>
                                 <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 col-xxl-3">
-                                    <div class="input-group justify-content-center justify-content-sm-end">
-                                        <span class="input-group-text-custom">N° Resultados:</span>
-                                        <select class="form-select-custom" id="cantidadResultados">
+                                    <div class="input-group input-group-sm justify-content-center justify-content-sm-end">
+                                        <label class="input-group-text border-secondary bg-gray"
+                                            for="totalResultados">N° Resultados:</label>
+                                        <select class="form-select border-secondary page-select" id="totalResultados"
+                                            name="totalResultados">
                                             <option value="5">5</option>
                                             <option value="10">10</option>
+                                            <option value="15" selected>15</option>
                                             <option value="20">20</option>
                                         </select>
                                     </div>

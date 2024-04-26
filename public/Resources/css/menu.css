@@ -227,6 +227,7 @@ body.dark .sidebar li a:hover .text{
     flex-direction: column;
     justify-content: space-between;
     overflow-y: scroll;
+    overflow-x: hidden;
 }
 
 .menu-bar::-webkit-scrollbar{
@@ -934,5 +935,16 @@ table .btn i
     align-items: center;
     justify-content: flex-end;
     gap: 8px;
+}
+
+.pag-item
+{
+    width: calc(1.6em + 0.5rem + calc(var(--bs-border-width)* 2));
+    height: calc(1.6em + 0.5rem + calc(var(--bs-border-width)* 2));
+}
+
+.page-select
+{
+    max-width: 75px;
 }
 /* End Region check collapse */

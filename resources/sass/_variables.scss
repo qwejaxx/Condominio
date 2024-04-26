@@ -1,9 +1,31 @@
+// Colores
+$primary:       #072721 !default;
+$secondary:     #126945 !default;
+$success:       #198754 !default;
+$info:          #1ca76d !default;
+$warning:       #ffc107 !default;
+$danger:        #dc3545 !default;
+$light:         #f8f9fa !default;
+$dark:          #212529 !default;
+$gray:          #e9ecef !default;
+
+// Temas
+$theme-colors: (
+  "primary":    $primary,
+  "secondary":  $secondary,
+  "success":    $success,
+  "info":       $info,
+  "warning":    $warning,
+  "danger":     $danger,
+  "light":      $light,
+  "dark":       $dark,
+  "gray":       $gray,
+) !default;
+
 // Body
 $body-bg: #dfdede;
-$primary: #072721;
-$secondary: #126945;
-$info: #1ca76d;
 $table-bg-scale: -0%;
+$component-active-bg: $secondary;
 
 
 // Typography
