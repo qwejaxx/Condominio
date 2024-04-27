@@ -9,8 +9,8 @@
 
 :root{
     /* ===== Colors ===== */
-    --body-color: #dfdede;
-    --sidebar-color: #072721;
+    --body-color: var(--bs-body-bg);
+    --sidebar-color: var(--bs-primary);
     --primary-color: #FFF;
     --primary-color-light: #126945;
     --toggle-color: #DDD;
@@ -57,7 +57,7 @@ body.dark{
     padding: 14px 10px 14px 10px;
     background: var(--sidebar-color);
     transition: var(--tran-05);
-    z-index: 1100;
+    z-index: 1040;
 }
 
 .sidebar.close{

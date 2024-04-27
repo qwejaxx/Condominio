@@ -19,7 +19,13 @@ Route::post('/login', [LoginController::class, 'login'])->name('loginNow');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Rutas para residentes
-Route::get('/Residentes/create', [ResidenteController::class, 'create'])->name('createRsdt');
-Route::get('/Residentes/index', [ResidenteController::class, 'index'])->name('indexRsdt');
+Route::get('/Residentes/indexRep', [ResidenteController::class, 'getRepresentantes'])->name('indexRepRsdt');
+Route::get('/Residentes/indexRoles', [ResidenteController::class, 'getRoles'])->name('indexRolesRsdt');
 Route::get('/Residentes', [ResidenteController::class, 'showIndex'])->name('Residentes');
+Route::get('/Residentes/index', [ResidenteController::class, 'index'])->name('indexRsdt');
 Route::post('/Residentes/store', [ResidenteController::class, 'store'])->name('storeRsdt');
+Route::get('/Residentes/{id}', [ResidenteController::class, 'show'])->name('showRsdt');
+Route::put('/Residentes/{id}', [ResidenteController::class, 'update'])->name('updateRsdt');
+Route::delete('/Residentes/{id}', [ResidenteController::class, 'destroy'])->name('destroyRsdt');
+
+

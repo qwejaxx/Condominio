@@ -19,7 +19,7 @@
     <script src="{{ asset('Resources/js/jquery-3.7.1.js') }}"></script>
     @yield('scripts')
 </head>
-<body>
+<body class="">
     @yield('content')
 </body>
 </html>

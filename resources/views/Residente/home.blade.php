@@ -1,13 +1,18 @@
 @extends('layouts.app')
 @section('styles')
     <link href="{{ asset('Resources/css/menu.css') }}" rel="stylesheet">
+    <link href="{{ asset('Resources/css/select2.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('Resources/css/select2-bootstrap-5-theme.css') }}" rel="stylesheet">
 @endsection
 @section('scripts')
     <script src="{{ asset('Resources/js/icons.js') }}"></script>
     <script src="{{ asset('Resources/js/menu.js') }}"></script>
     <script src="{{ asset('Resources/js/residente.js') }}"></script>
+    <script src="{{ asset('Resources/js/select2.min.js') }}"></script>
 @endsection
 <input id="url-index" type="hidden" name="url-index" value="{{ route('indexRsdt') }}">
+<input id="url-store" type="hidden" name="url-store" value="{{ route('storeRsdt') }}">
+<input id="url-show" type="hidden" name="url-show" value="{{ route('Residentes') }}">
 <nav class="sidebar d-none d-sm-block m-2 rounded">
     <header>
         <div class="image-text custom-header">
@@ -210,7 +215,8 @@
                                     data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
                                     <div class="modal-dialog modal-dialog-centered">
                                         <div class="modal-custom">
-                                            <form id="formulario">
+                                            <input id="id_rsdt" type="hidden" name="id_rsdt">
+                                            <form id="rsdtForm" data-url="{{ route('storeRsdt') }}">
                                                 <div class="header">
                                                     <div><i class="fa-solid fa-sitemap me-2"></i><span
                                                             id="modal-titulo">Nuevo Residente</span></div>
@@ -218,22 +224,23 @@
                                                         data-bs-dismiss="modal"></i>
                                                 </div>
                                                 <div class="body">
+                                                    <div class="text-center" id="modal-mensaje"></div>
                                                     @csrf
                                                     <div class="d-flex flex-column mb-1">
                                                         <label for="ci_rsdt" class="label-form">CI:</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            id="ci_rsdt" name="ci_rsdt" required>
+                                                            id="ci_rsdt" name="ci_rsdt">
                                                     </div>
                                                     <div class="d-flex flex-column mb-1">
                                                         <label for="nombre_rsdt" class="label-form">Nombre:</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            id="nombre_rsdt" name="nombre_rsdt" required>
+                                                            id="nombre_rsdt" name="nombre_rsdt">
                                                     </div>
                                                     <div class="d-flex flex-column mb-1">
                                                         <label for="apellidop_rsdt" class="label-form">Apellido
                                                             Paterno:</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            id="apellidop_rsdt" name="apellidop_rsdt" required>
+                                                            id="apellidop_rsdt" name="apellidop_rsdt">
                                                     </div>
                                                     <div class="d-flex flex-column mb-1">
                                                         <label for="apellidom_rsdt" class="label-form">Apellido
@@ -245,29 +252,40 @@
                                                         <label for="fechanac_rsdt" class="label-form">Fecha de
                                                             Nacimiento:</label>
                                                         <input type="date" class="form-control form-control-sm"
-                                                            id="fechanac_rsdt" name="fechanac_rsdt" required>
+                                                            id="fechanac_rsdt" name="fechanac_rsdt">
                                                     </div>
                                                     <div class="d-flex flex-column mb-1">
                                                         <label for="telefono_rsdt"
                                                             class="label-form">Teléfono:</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            id="telefono_rsdt" name="telefono_rsdt" required>
+                                                            id="telefono_rsdt" name="telefono_rsdt">
                                                     </div>
 
-                                                    <!-- Opciones para el usuario -->
+                                                    <!-- Opciones para representante de familia -->
                                                     <div
                                                         class="d-flex justify-content-between align-items-center mb-1">
-                                                        <label class="form-check-label" for="tiene_usuario"
-                                                            style="line-height: 1;">¿Crear usuario?</label>
-                                                        <div id="seccionCheckUnidad"
-                                                            class="form-check form-switch mb-0 d-flex justify-content-end">
-                                                            <input id="tiene_usuario" class="form-check-input"
+                                                        <label class="form-check-label" for="es_representante"
+                                                            style="line-height: 1;">¿Es representante familiar?</label>
+                                                        <div
+                                                            class="form-check p-0 form-switch mb-0 d-flex justify-content-end align-items-center">
+                                                            <input id="es_representante" name="es_representante" class="form-check-input mt-0"
                                                                 type="checkbox" role="switch">
                                                         </div>
                                                     </div>
 
-                                                    <!-- Campos adicionales si se crea un usuario -->
-                                                    <div id="campos_usuario">
+                                                    <!-- Campo adicional si es representante de familia -->
+                                                    <div id="campos_representante" class="collapse show">
+                                                        <div class="d-flex flex-column mb-1">
+                                                            <label for="rep_fam_id_rsdt"
+                                                                class="label-form">Representante Familiar:</label>
+                                                            <select class="form-select" data-url="{{ route('indexRepRsdt') }}"
+                                                                id="rep_fam_id_rsdt" name="rep_fam_id_rsdt">
+                                                            </select>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Campos adicionales si no es representante de familia -->
+                                                    <div id="campos_usuario" class="collapse">
                                                         <div class="d-flex flex-column mb-1">
                                                             <label for="email" class="label-form">Correo
                                                                 Electrónico:</label>
@@ -277,54 +295,23 @@
                                                         <div class="d-flex flex-column mb-1">
                                                             <label for="password"
                                                                 class="label-form">Contraseña:</label>
-                                                            <input type="password"
-                                                                class="form-control form-control-sm" id="password"
-                                                                name="password">
+                                                            <input type="text" class="form-control form-control-sm"
+                                                                id="password" name="password">
                                                         </div>
-                                                        <div class="d-flex flex-column mb-1">
+                                                        <div class="d-flex flex-column">
                                                             <label for="rol" class="label-form">Rol:</label>
-                                                            <select class="form-select form-select-sm mb-1" id="rol"
-                                                                name="rol">
-                                                                <option value="Administrador">Administrador</option>
-                                                                <option value="Usuario">Usuario</option>
+                                                            <select class="form-select form-select-sm" data-url="{{ route('indexRolesRsdt') }}"
+                                                                id="rol" name="rol">
                                                             </select>
                                                         </div>
                                                     </div>
-
-                                                    <!-- Opciones para representante de familia -->
-                                                    <div
-                                                        class="d-flex justify-content-between align-items-center mb-1">
-                                                        <label class="form-check-label" for="es_representante"
-                                                            style="line-height: 1;">¿Es representante de
-                                                            familia?</label>
-                                                        <div id="seccionCheckRepresentante"
-                                                            class="form-check form-switch mb-0 d-flex justify-content-end">
-                                                            <input id="es_representante" class="form-check-input"
-                                                                type="checkbox" role="switch">
-                                                        </div>
-                                                    </div>
-
-                                                    <!-- Campo adicional si es representante de familia -->
-                                                    <div id="campos_representante">
-                                                        <div class="d-flex flex-column mb-1">
-                                                            <label for="rep_fam_id_rsdt"
-                                                                class="label-form">Representante Familiar:</label>
-                                                            <select class="form-select form-select-sm mb-1"
-                                                                id="rep_fam_id_rsdt" name="rep_fam_id_rsdt">
-                                                            </select>
-                                                        </div>
-                                                    </div>
-<<<<<<< HEAD
-=======
-
->>>>>>> 4acdc273725e4edbd338d7efbe8b0565f617658b
                                                 </div>
                                                 <div class="footer">
                                                     <div id="botonesModal">
                                                         <button type="button" class="btn btn-sm btn-secondary"
                                                             data-bs-dismiss="modal">Cancelar</button>
-                                                        <button type="submit" name="agregar" id="btnCrud"
-                                                            class="btn btn-sm btn-primary" disabled>Agregar</button>
+                                                        <button type="submit" name="store" id="btnCrud"
+                                                            class="btn btn-sm btn-outline-light">Agregar</button>
                                                     </div>
                                                 </div>
                                             </form>
@@ -380,7 +367,8 @@
                                     </ul>
                                 </div>
                                 <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 col-xxl-3">
-                                    <div class="input-group input-group-sm justify-content-center justify-content-sm-end">
+                                    <div
+                                        class="input-group input-group-sm justify-content-center justify-content-sm-end">
                                         <label class="input-group-text border-secondary bg-gray"
                                             for="totalResultados">N° Resultados:</label>
                                         <select class="form-select border-secondary page-select" id="totalResultados"

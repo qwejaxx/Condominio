@@ -1,77 +1,160 @@
 $(document).ready(function () {
     //#region Configuraciones Iniciales
+    let modalMain = $('#modalMain');
+    let tituloModal = $('#modal-titulo');
+    let mensajeModal = $('#modal-mensaje');
+    let searchInput = $('#search');
+    let btnCrud = $('#btnCrud');
+    let tableIndex = $('#tabla');
+    let urlIndex = $('#url-index').val();
+    let urlStore = $('#url-store').val();
+    let urlShow = $('#url-show').val() + '/';
+    let urlUpdate = urlShow;
+    let urlDelete = urlShow;
+    //#endregion
+
+    //#region Funciones Extras
+    function collapseWithCheck(inputCheck, seccionVisible, inputVisible, seccionNoVisible, inputNoVisible) {
+        let temporizador;
+        if (inputCheck.is(':checked')) {
+            inputCheck.prop('disabled', true);
+            clearTimeout(temporizador);
+            temporizador = setTimeout(function () {
+                seccionVisible.collapse('hide');
+                seccionNoVisible.collapse('show');
+                setTimeout(function () {
+                    inputNoVisible.focus();
+                    inputCheck.prop('disabled', false);
+                    if (btnCrud.attr('name') == "show" || btnCrud.attr('name') == "delete")
+                    inputCheck.prop('disabled', true);
+                }, 250);
+            }, 200);
+        }
+        else {
+            inputCheck.prop('disabled', true);
+            temporizador = setTimeout(function () {
+                seccionVisible.collapse('show');
+                setTimeout(function () {
+                    inputVisible.focus();
+                    inputCheck.prop('disabled', false);
+                    if (btnCrud.attr('name') == "show" || btnCrud.attr('name') == "delete")
+                    inputCheck.prop('disabled', true);
+                }, 250);
+                seccionNoVisible.collapse('hide');
+            }, 200);
+        }
+    }
+
+    function getResidentesOnSelect() {
+        let _token = $('meta[name="csrf-token"]').attr('content');
+        let select = $("#rep_fam_id_rsdt");
+        let url = select.data('url');
+
+        $.ajax(
+            {
+                url: url,
+                type: 'GET',
+                data: { _token: _token },
+                dataType: 'json',
+                success: function (response) {
+                    let representantes = response.data;
+
+                    if (representantes.length > 0) {
+                        select.empty();
+                        representantes.forEach(representante => {
+                            select.append($("<option>",
+                                {
+                                    value: representante.id_rsdt, text: representante.nombre_rsdt + ' ' + representante.apellidop_rsdt
+                                }));
+                        });
+                    }
+                    else {
+                        console.log("No hay resultados");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log("Error en la solicitud AJAX: " + error);
+                }
+            });
+    }
+
+    function getRolesOnSelect() {
+        let _token = $('meta[name="csrf-token"]').attr('content');
+        let select = $("#rol");
+        let url = select.data('url');
+
+        $.ajax(
+            {
+                url: url,
+                type: 'GET',
+                data: { _token: _token },
+                dataType: 'json',
+                success: function (response) {
+                    let roles = response.data;
+
+                    if (roles.length > 0) {
+                        select.empty();
+                        roles.forEach(rol => {
+                            select.append($("<option>",
+                                {
+                                    value: rol.name, text: rol.name
+                                }));
+                        });
+                    }
+                    else {
+                        console.log("No hay resultados");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log("Error en la solicitud AJAX: " + error);
+                }
+            });
+    }
+
+    function resetAllOnModal()
+    {
+        $('#rsdtForm')[0].reset(); // Reiniciar Formulario
+        $('#rsdtForm').find(':input').prop('disabled', false);
+        $('#botonesModal').removeClass('opacity-0');
+        $('#campos_representante').addClass('show');
+        $('#campos_usuario').removeClass('show');
+        tituloModal.text('Nuevo Residente');
+        mensajeModal.html('');
+        btnCrud.attr('name', 'store');
+        btnCrud.text('Agregar');
+    }
+    //#endregion
+
+    //#region Funciones Prepare
+    function prepareSelect(id)
+    {
+        tituloModal.text('Detalles sobre el Residente');
+        $('#rsdtForm').find(':input').prop('disabled', true);
+        $('#password').attr('type', 'password');
+        $('#botonesModal').addClass('opacity-0');
+        show(id);
+    }
+
+    function prepareEdit(id)
+    {
+        tituloModal.text('Editar Residente');
+        $('#rsdtForm').find(':input').prop('disabled', false);
+        $('#password').attr('type', 'password');
+        show(id);
+    }
+
+    function prepareDelete(id)
+    {
+        tituloModal.text('Eliminar Residente');
+        mensajeModal.html('El siguiente residente se eliminará a continuación,<br>¿Está seguro?');
+        $('#rsdtForm').find(':input:not(button)').prop('disabled', true);
+
+        $('#password').attr('type', 'password');
+        show(id);
+    }
     //#endregion
 
     //#region Paginación
-
-    //#endregion
-
-    //#region Funciones CRUD
-    function index(search, url) {
-        let table = $('#tabla');
-        let _token = $('input[name="_token"]').val();
-        let totalResultados = $('#totalResultados').val();
-        let error = $('#index-error');
-        let seccionTotalResultados = $('#seccionTotalResultados');
-        let html = "";
-
-        $.ajax({
-            url: url,
-            type: 'GET',
-            data: { _token: _token, search: search, totalResultados: totalResultados },
-            dataType: 'json',
-            success: function (response) {
-                table.empty();
-                if (response.data.data.length > 0) {
-                    error.html('');
-                    html = `
-                    <thead class="table-secondary fw-semibold">
-                        <tr>
-                            <th>CI</th>
-                            <th>NOMBRE</th>
-                            <th>FECHA DE NACIMIENTO</th>
-                            <th>TELÉFONO</th>
-                            <th>REPRESENTANTE</th>
-                            <th width="200">ACCIONES</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                `;
-                    response.data.data.forEach(residente => {
-                        html += `
-                        <tr>
-                            <td>${residente.ci_rsdt}</td>
-                            <td>${residente.nombre_rsdt} ${residente.apellidop_rsdt} ${residente.apellidom_rsdt}</td>
-                            <td>${residente.fechanac_rsdt}</td>
-                            <td>${residente.telefono_rsdt}</td>
-                            <td>${residente.nombre_representante == null ? 'Ninguno' : residente.nombre_representante + ' ' + residente.apellido_representante}</td>
-                            <td>
-                                <button id='btnSelect' data-id="${residente.id_rsdt}" class='btn p-0 btn-sm btn-info text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-magnifying-glass-plus'></i></button>
-                                <button id='btnEdit' data-id="${residente.id_rsdt}" class='btn p-0 btn-sm btn-secondary text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-pen-to-square'></i></button>
-                                <button id='btnDelete' data-id="${residente.id_rsdt}" class='btn p-0 btn-sm btn-primary' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-trash'></i></button>
-                            </td>
-                        </tr>
-                    `;
-                    });
-                    html += `</tbody>`;
-                    table.append(html);
-
-                    // Llamar a la función para generar los botones de paginación
-                    generatePaginationButtons(response.data.current_page, response.data.last_page, url, search);
-                    seccionTotalResultados.removeClass('d-none');
-                } else {
-                    error.html('No se encontraron resultados.')
-                    let paginationContainer = $('#pagination-container');
-                    paginationContainer.empty();
-                    seccionTotalResultados.addClass('d-none');
-                }
-            },
-            error: function (xhr, status, error) {
-                console.error(xhr.responseText);
-            }
-        });
-    }
-
     function generatePaginationButtons(currentPage, lastPage, url, search) {
         let paginationContainer = $('#pagination-container');
         paginationContainer.empty();
@@ -151,19 +234,198 @@ $(document).ready(function () {
         });
         paginationContainer.append(lastPageButton);
     }
+    //#endregion
 
-    function store(event) {
-        let formData = $('#rsdtForm').serialize();
-        let url = $('#rsdtForm').data('url');
+    //#region Funciones CRUD
+    function index(search = "", url = urlIndex + '?page=1') {
+        let _token = $('meta[name="csrf-token"]').attr('content');
+        let totalResultados = $('#totalResultados').val();
+        let error = $('#index-error');
+        let seccionTotalResultados = $('#seccionTotalResultados');
+        let html = "";
 
         $.ajax({
             url: url,
+            type: 'GET',
+            data: { _token: _token, search: search, totalResultados: totalResultados },
+            dataType: 'json',
+            success: function (response) {
+                tableIndex.empty();
+                if (response.data.data.length > 0) {
+                    error.html('');
+                    html = `
+                    <thead class="table-secondary fw-semibold">
+                        <tr>
+                            <th>CI</th>
+                            <th>NOMBRE</th>
+                            <th>FECHA DE NACIMIENTO</th>
+                            <th>TELÉFONO</th>
+                            <th>ES REP. FAMILIAR</th>
+                            <th width="200">ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                `;
+                    response.data.data.forEach(residente => {
+                        html += `
+                        <tr>
+                            <td>${residente.ci_rsdt}</td>
+                            <td>${residente.nombre_rsdt} ${residente.apellidop_rsdt} ${residente.apellidom_rsdt}</td>
+                            <td>${residente.fechanac_rsdt}</td>
+                            <td>${residente.telefono_rsdt}</td>
+                            <td>${residente.nombre_representante == null ? 'Sí' : 'No'}</td>
+                            <td>
+                                <button id='btnSelect' data-id="${residente.id_rsdt}" class='btn p-0 btn-sm btn-info text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-magnifying-glass-plus'></i></button>
+                                <button id='btnEdit' data-id="${residente.id_rsdt}" class='btn p-0 btn-sm btn-secondary text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-pen-to-square'></i></button>
+                                <button id='btnDelete' data-id="${residente.id_rsdt}" class='btn p-0 btn-sm btn-primary' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-trash'></i></button>
+                            </td>
+                        </tr>
+                    `;
+                    });
+                    html += `</tbody>`;
+                    tableIndex.append(html);
+
+                    // Llamar a la función para generar los botones de paginación
+                    generatePaginationButtons(response.data.current_page, response.data.last_page, url, search);
+                    seccionTotalResultados.removeClass('d-none');
+                } else {
+                    error.html('No se encontraron resultados.')
+                    let paginationContainer = $('#pagination-container');
+                    paginationContainer.empty();
+                    seccionTotalResultados.addClass('d-none');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    }
+
+    function store() {
+        let formData = $('#rsdtForm').serialize();
+
+        $.ajax({
+            url: urlStore,
             type: 'POST',
             data: formData,
             success: function (response) {
                 console.log(response);
+                if (response.state) {
+                    searchInput.val(response.data.residente.ci_rsdt);
+                    index(response.data.residente.ci_rsdt);
+                    modalMain.modal('hide');
+                    setTimeout(function () {
+                        searchInput.focus();
+                    }, 700);
+                }
+                else {
+                    console.log(response.message);
+                }
             },
             error: function (xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    }
+
+    function llenarFormulario(data) {
+        let residente = data.residente;
+        let user = data.user;
+        $('#id_rsdt').val(residente.id_rsdt);
+        $('#ci_rsdt').val(residente.ci_rsdt);
+        $('#nombre_rsdt').val(residente.nombre_rsdt);
+        $('#apellidop_rsdt').val(residente.apellidop_rsdt);
+        $('#apellidom_rsdt').val(residente.apellidom_rsdt);
+        $('#fechanac_rsdt').val(residente.fechanac_rsdt);
+        $('#telefono_rsdt').val(residente.telefono_rsdt);
+
+        if (residente.rep_fam_id_rsdt == null)
+        {
+            $('#email').val(user.email);
+            $('#password').attr('type', 'password');
+            $('#password').val(user.password);
+            $('#rol').val(data.rol[0]);
+            $('#es_representante').prop('checked', true).trigger('input');
+        }
+        else
+        {
+            $('#rep_fam_id_rsdt').val(residente.rep_fam_id_rsdt).trigger('change');
+            $('#es_representante').prop('checked', false).trigger('input');
+        }
+
+    }
+
+    function show(id) {
+        let _token = $('meta[name="csrf-token"]').attr('content');
+        $.ajax({
+            url: urlShow + id,
+            type: 'GET',
+            data: { _token: _token },
+            dataType: 'json',
+            success: function(response) {
+                if (response.state) {
+                    llenarFormulario(response.data);
+                    modalMain.modal('show');
+                } else {
+                    console.error(response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    }
+
+    function update(id) {
+        let formData = $('#rsdtForm').serialize();
+
+        $.ajax({
+            url: urlUpdate + id,
+            type: 'PUT',
+            data: formData,
+            success: function (response) {
+                console.log(response);
+                if (response.state) {
+                    // Actualización exitosa
+                    console.log("¡Actualización exitosa!");
+                    searchInput.val(response.data.residente.ci_rsdt);
+                    index(response.data.residente.ci_rsdt);
+                    modalMain.modal('hide');
+                    setTimeout(function () {
+                        searchInput.focus();
+                    }, 700);
+                } else {
+                    console.error(response.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                // Si hay un error en la solicitud AJAX, muestra el mensaje de error en la consola
+                console.error(xhr.responseText);
+            }
+        });
+    }
+
+    function destroy(id)
+    {
+        let _token = $('meta[name="csrf-token"]').attr('content');
+
+        $.ajax({
+            url: urlDelete + id,
+            type: 'DELETE',
+            data: { _token: _token },
+            success: function(response) {
+                if (response.state) {
+                    // El residente se eliminó correctamente
+                    console.log(response.message);
+                    index();
+                    modalMain.modal('hide');
+                    // Actualizar la lista de residentes o tomar alguna otra acción necesaria
+                } else {
+                    // Hubo un error al eliminar el residente
+                    console.error(response.message);
+                }
+            },
+            error: function(xhr, status, error) {
                 console.error(xhr.responseText);
             }
         });
@@ -171,23 +433,94 @@ $(document).ready(function () {
     //#endregion
 
     //#region Interacción DOM
-    // Index inicial
-    index("", $('#url-index').val() + '?page=1');
+    //#region Extras
+    //#region Select2 con Buscador
+    $("#rep_fam_id_rsdt").select2({
+        theme: "bootstrap-5",
+        selectionCssClass: "select2--small",
+        dropdownCssClass: "select2--small",
+        dropdownParent: $('#modalMain')
+    });
+    //#endregion
+    //#region Colapso
+    $("#es_representante").on('input', function () {
+        collapseWithCheck($(this), $("#campos_representante"), $("#rep_fam_id_rsdt"), $("#campos_usuario"), $("#email"));
+    });
+    //#endregion
+    //#endregion
 
-    // Búsqueda
-    $('#search').on('input', function () {
-        let url = $('#url-index').val() + '?page=1';
-        index($(this).val(), url);
+    //#region Funciones de Carga Inicial
+    index();
+    getResidentesOnSelect();
+    getRolesOnSelect();
+    //#endregion
+
+    //#region Busqueda
+    searchInput.on('input', function () {
+        index($(this).val());
     });
 
     $('#totalResultados').on('input', function () {
-        let url = $('#url-index').val() + '?page=1';
-        index($('#search').val(), url);
+        index(searchInput.val());
+    });
+    //#endregion
+
+    //#region Store
+    btnCrud.click(function (e) {
+        e.preventDefault();
+        let action = $(this).attr('name');
+        let id = $('#id_rsdt').val();
+        switch (action) {
+            case "store":
+                {
+                    store();
+                }
+                break;
+            case "edit":
+                {
+                    update(id);
+                }
+                break;
+            case "delete":
+                {
+                    destroy(id);
+                }
+                break;
+        }
+    });
+    //#endregion
+    //#endregion
+
+    //#region Activacion de botones de CRUD
+    tableIndex.on('click', '#btnSelect', function () {
+        let id = $(this).data('id');
+        btnCrud.attr('name', 'show');
+        btnCrud.text('Show');
+        prepareSelect(id);
     });
 
-    // Store
-    $("#storeBtn").click(function (e) {
-        store(e);
+    tableIndex.on('click', '#btnEdit', function () {
+        let id = $(this).data('id');
+        btnCrud.attr('name', 'edit');
+        btnCrud.text('Editar');
+        prepareEdit(id);
+    });
+
+    tableIndex.on('click', '#btnDelete', function () {
+        let id = $(this).data('id');
+        btnCrud.attr('name', 'delete');
+        btnCrud.text('Eliminar');
+        prepareDelete(id);
+    });
+    //#endregion
+
+    //#region Configuracion en Modales
+    $("#modalMain").on("shown.bs.modal", function () {
+
+    });
+
+    modalMain.on('hidden.bs.modal', function () {
+        resetAllOnModal();
     });
     //#endregion
 });
