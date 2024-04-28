@@ -103,6 +103,22 @@ class ResidenteController extends Controller
         try {
             DB::beginTransaction();
 
+            if ($request->has('es_representante'))
+            {
+                $user = User::create([
+                    'name' => $request->nombre_rsdt,
+                    'email' => $request->email,
+                    'password' => Hash::make($request->password),
+                    'estado' => 1
+                ])->assignRole($request->rol);
+                $rep_fam = null;
+            }
+            else
+            {
+                $user = null;
+                $rep_fam = $request->rep_fam_id_rsdt;
+            }
+
             $residente = Residente::create([
                 'ci_rsdt' => $request->ci_rsdt,
                 'nombre_rsdt' => $request->nombre_rsdt,
@@ -110,21 +126,20 @@ class ResidenteController extends Controller
                 'apellidom_rsdt' => $request->apellidom_rsdt,
                 'fechanac_rsdt' => $request->fechanac_rsdt,
                 'telefono_rsdt' => $request->telefono_rsdt,
-                'usuario_id_rsdt' => $request->has('es_representante') ? User::create([
-                    'name' => $request->nombre_rsdt,
-                    'email' => $request->email,
-                    'password' => Hash::make($request->password),
-                    'estado' => 1
-                ])->assignRole($request->rol)->id : null,
-                'rep_fam_id_rsdt' => $request->has('es_representante') ? null : $request->rep_fam_id_rsdt,
+                'usuario_id_rsdt' => $user ? $user->id : null,
+                'rep_fam_id_rsdt' => $rep_fam
             ]);
 
             DB::commit();
 
             $response = [
                 'state' => true,
-                'message' => 'La operación se realizó con éxito.',
-                'data' => $residente
+                'message' => 'Se ha agregado un nuevo residente.',
+                'data' => [
+                    'residente' => $residente,
+                    'user' => $user,
+                    'rol' => $user ? $user->getRoleNames() : null
+                ],
             ];
         } catch (\Exception $e) {
             DB::rollBack();
@@ -132,7 +147,11 @@ class ResidenteController extends Controller
             $response = [
                 'state' => false,
                 'message' => 'Error en store: ' . $e->getMessage(),
-                'data' => null
+                'data' => [
+                    'residente' => null,
+                    'user' => null,
+                    'rol' => null
+                ]
             ];
         } finally {
             return response()->json($response);

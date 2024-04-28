@@ -21,11 +21,18 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // Rutas para residentes
 Route::get('/Residentes/indexRep', [ResidenteController::class, 'getRepresentantes'])->name('indexRepRsdt');
 Route::get('/Residentes/indexRoles', [ResidenteController::class, 'getRoles'])->name('indexRolesRsdt');
-Route::get('/Residentes', [ResidenteController::class, 'showIndex'])->name('Residentes');
+Route::get('/Residentes', [ResidenteController::class, 'showIndex'])->middleware('auth')->name('Residentes');
 Route::get('/Residentes/index', [ResidenteController::class, 'index'])->name('indexRsdt');
 Route::post('/Residentes/store', [ResidenteController::class, 'store'])->name('storeRsdt');
 Route::get('/Residentes/{id}', [ResidenteController::class, 'show'])->name('showRsdt');
 Route::put('/Residentes/{id}', [ResidenteController::class, 'update'])->name('updateRsdt');
 Route::delete('/Residentes/{id}', [ResidenteController::class, 'destroy'])->name('destroyRsdt');
 
+// Rutas para departamentos
+Route::get('/Departamentos', [ResidenteController::class, 'showIndex'])->name('Departamentos');
+Route::get('/Personal', [ResidenteController::class, 'showIndex'])->name('Personal');
+Route::get('/Mascotas', [ResidenteController::class, 'showIndex'])->name('Mascotas');
+Route::get('/Visitas', [ResidenteController::class, 'showIndex'])->name('Visitas');
+Route::get('/Planificaciones', [ResidenteController::class, 'showIndex'])->name('Planificaciones');
+Route::get('/Parking', [ResidenteController::class, 'showIndex'])->name('Parking');
 

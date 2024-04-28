@@ -1,0 +1,262 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #777;
+}
+
+.password-toggle:hover {
+    color: #333;
+}
+
+.contenedor {
+    background-repeat: no-repeat;
+    background-position: right center;
+    background-size: 41%;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    background-color: #022721;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.nebulosa {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    background: radial-gradient(circle, rgb(0 0 0 / 0%), rgb(0 0 0));
+    border-top: 5px solid #02271a;
+    border-bottom: 3px solid #02271a;
+    background-clip: content-box;
+}
+
+
+
+@keyframes borderChange {
+
+    0%,
+    100% {
+        transform: scaleY(1) translateY(0);
+    }
+
+    50% {
+        transform: scaleY(1.5) translateY(-20%);
+    }
+}
+
+
+@keyframes moveNebulosa {
+    0% {
+        transform: translateX(0) translateY(-2%);
+    }
+
+    100% {
+        transform: translateX(0) translateY(2%);
+    }
+}
+
+.login-container {
+    position: absolute;
+    backdrop-filter: blur(8px);
+    padding: 40px;
+    border-radius: 8px;
+    background-color: #ffffff0d;
+    border: 1px solid white;
+    box-shadow: 1px 1px 30px rgb(127 127 127);
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+    /* opacity: 0; */
+    /* transform: translateY(50px); */
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.login-container.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+h2 {
+    color: #fff;
+    margin-bottom: 20px;
+}
+
+.input-container {
+    position: relative;
+}
+
+.input-container:nth-child(2) {
+    margin-top:10px;
+    margin-bottom: 20px;
+}
+
+.input-container:nth-child(3) {
+    margin-bottom: 10px;
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border-radius: 4px;
+    background-color: #1f1f1f;
+    color: #fff;
+    border: 1px solid white;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+.underline {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #1e683f;
+    transform-origin: center;
+    transform: scaleX(0);
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input-container input:focus+.underline {
+    transform: scaleX(1);
+}
+
+.button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    background-color: #1e683f;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0f3620;
+}
+
+
+/*...................Estilos CheckBox...........................*/
+/*  */
+.checked {
+    position: relative;
+    font-size: 15px;
+    user-select: none;
+}
+
+.checked input {
+    visibility: hidden;
+    opacity: 0;
+    border: none;
+    position: absolute;
+}
+
+.checked label {
+    cursor: pointer;
+}
+
+.checked span {
+    color: white;
+    font-size: 14.4px;
+    line-height: 1em;
+    /* z-index: 2; */
+    /* text-align: left; */
+    /* white-space: nowrap; */
+}
+
+.checked input+div {
+    position: relative;
+    padding-left: 1.8em;
+}
+
+.checked input+div span {
+    display: block;
+    transition: all 0.6s;
+}
+
+.checked input+div span:first-child {
+    position: absolute;
+    width: 1.1em;
+    height: 1.1em;
+    content: '';
+    display: block;
+    top: 50%;
+    left: 0;
+    background-color: #1F1F1F;
+    /* box-shadow: inset 0 0 0 1px #ffffff; */
+    transform: translateY(-50%);
+    border-radius: 0.3em;
+    border: 1px solid white;
+}
+
+.checked input+div span:first-child::after {
+    content: '';
+    display: block;
+    background-image: url('../icon/check-solid.svg');
+    background-position: center center;
+    background-size: cover;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    /* border: 0px; */
+    transform: translate(-40%, -80%);
+    width: 1.1em;
+    height: 1.1em;
+    opacity: 0;
+    transition: all 0.3s;
+}
+
+.checked input+div span:nth-child(2),
+.checked input+div span:nth-child(3) {
+    max-width: 370px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.checked input+div span:nth-child(2) {
+    transform: translateY(60%);
+}
+
+.checked input+div span:nth-child(3) {
+    transform: translateY(0%) rotateX(90deg);
+    opacity: 0;
+}
+
+.checked input:checked+div span:first-child {
+    transform: translateY(-50%) scale(1.1);
+}
+
+.checked input:checked+div span:first-child::after {
+    transform: translate(-40%, -55%);
+    opacity: 1;
+}
+
+.checked input:checked+div span:nth-child(2) {
+    transform: translateY(0%) rotateX(-90deg);
+}
+
+.checked input:checked+div span:nth-child(3) {
+    transform: translateY(-40%) rotateX(0deg);
+    opacity: 1;
+}

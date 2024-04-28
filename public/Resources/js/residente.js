@@ -118,6 +118,7 @@ $(document).ready(function () {
         $('#botonesModal').removeClass('opacity-0');
         $('#campos_representante').addClass('show');
         $('#campos_usuario').removeClass('show');
+        $('#rep_fam_id_rsdt').val($('#rep_fam_id_rsdt option:first').val()).trigger('change');
         tituloModal.text('Nuevo Residente');
         mensajeModal.html('');
         btnCrud.attr('name', 'store');
@@ -311,8 +312,8 @@ $(document).ready(function () {
             success: function (response) {
                 console.log(response);
                 if (response.state) {
-                    searchInput.val(response.data.residente.ci_rsdt);
-                    index(response.data.residente.ci_rsdt);
+                    searchInput.val(response.data.ci_rsdt);
+                    index(response.data.ci_rsdt);
                     modalMain.modal('hide');
                     setTimeout(function () {
                         searchInput.focus();
@@ -415,13 +416,11 @@ $(document).ready(function () {
             data: { _token: _token },
             success: function(response) {
                 if (response.state) {
-                    // El residente se eliminó correctamente
                     console.log(response.message);
+                    searchInput.val('');
                     index();
                     modalMain.modal('hide');
-                    // Actualizar la lista de residentes o tomar alguna otra acción necesaria
                 } else {
-                    // Hubo un error al eliminar el residente
                     console.error(response.message);
                 }
             },

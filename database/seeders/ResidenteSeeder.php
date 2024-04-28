@@ -46,7 +46,7 @@ class ResidenteSeeder extends Seeder
             'rep_fam_id_rsdt' => 2,
         ]); */
 
-        for ($i = 0; $i <= 10; $i++)
+        for ($i = 0; $i <= 50; $i++)
         {
             ResidenteFactory::new()->create();
         }

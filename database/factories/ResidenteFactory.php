@@ -24,7 +24,7 @@ class ResidenteFactory extends Factory
     public function definition(): array
     {
         // Obtener todos los IDs de los Residentes
-        $residenteIds = Residente::pluck('id_rsdt')->toArray();
+        $residenteIds = Residente::whereNull('rep_fam_id_rsdt')->pluck('id_rsdt')->toArray();
         $residenteIds[] = null;
 
         // Seleccionar un ID aleatorio de la lista
