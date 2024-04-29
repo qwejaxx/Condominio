@@ -14,112 +14,12 @@ $(document).ready(function () {
     //#endregion
 
     //#region Funciones Extras
-    function collapseWithCheck(inputCheck, seccionVisible, inputVisible, seccionNoVisible, inputNoVisible) {
-        let temporizador;
-        if (inputCheck.is(':checked')) {
-            inputCheck.prop('disabled', true);
-            clearTimeout(temporizador);
-            temporizador = setTimeout(function () {
-                seccionVisible.collapse('hide');
-                seccionNoVisible.collapse('show');
-                setTimeout(function () {
-                    inputNoVisible.focus();
-                    inputCheck.prop('disabled', false);
-                    if (btnCrud.attr('name') == "show" || btnCrud.attr('name') == "delete")
-                    inputCheck.prop('disabled', true);
-                }, 250);
-            }, 200);
-        }
-        else {
-            inputCheck.prop('disabled', true);
-            temporizador = setTimeout(function () {
-                seccionVisible.collapse('show');
-                setTimeout(function () {
-                    inputVisible.focus();
-                    inputCheck.prop('disabled', false);
-                    if (btnCrud.attr('name') == "show" || btnCrud.attr('name') == "delete")
-                    inputCheck.prop('disabled', true);
-                }, 250);
-                seccionNoVisible.collapse('hide');
-            }, 200);
-        }
-    }
-
-    function getResidentesOnSelect() {
-        let _token = $('meta[name="csrf-token"]').attr('content');
-        let select = $("#rep_fam_id_rsdt");
-        let url = select.data('url');
-
-        $.ajax(
-            {
-                url: url,
-                type: 'GET',
-                data: { _token: _token },
-                dataType: 'json',
-                success: function (response) {
-                    let representantes = response.data;
-
-                    if (representantes.length > 0) {
-                        select.empty();
-                        representantes.forEach(representante => {
-                            select.append($("<option>",
-                                {
-                                    value: representante.id_rsdt, text: representante.nombre_rsdt + ' ' + representante.apellidop_rsdt
-                                }));
-                        });
-                    }
-                    else {
-                        console.log("No hay resultados");
-                    }
-                },
-                error: function (xhr, status, error) {
-                    console.log("Error en la solicitud AJAX: " + error);
-                }
-            });
-    }
-
-    function getRolesOnSelect() {
-        let _token = $('meta[name="csrf-token"]').attr('content');
-        let select = $("#rol");
-        let url = select.data('url');
-
-        $.ajax(
-            {
-                url: url,
-                type: 'GET',
-                data: { _token: _token },
-                dataType: 'json',
-                success: function (response) {
-                    let roles = response.data;
-
-                    if (roles.length > 0) {
-                        select.empty();
-                        roles.forEach(rol => {
-                            select.append($("<option>",
-                                {
-                                    value: rol.name, text: rol.name
-                                }));
-                        });
-                    }
-                    else {
-                        console.log("No hay resultados");
-                    }
-                },
-                error: function (xhr, status, error) {
-                    console.log("Error en la solicitud AJAX: " + error);
-                }
-            });
-    }
-
-    function resetAllOnModal()
-    {
+    function resetAllOnModal() {
         $('#rsdtForm')[0].reset(); // Reiniciar Formulario
         $('#rsdtForm').find(':input').prop('disabled', false);
         $('#botonesModal').removeClass('opacity-0');
-        $('#campos_representante').addClass('show');
-        $('#campos_usuario').removeClass('show');
-        $('#rep_fam_id_rsdt').val($('#rep_fam_id_rsdt option:first').val()).trigger('change');
-        tituloModal.text('Nuevo Residente');
+        $('#propietario_id_mas').val($('#propietario_id_mas option:first').val()).trigger('change');
+        tituloModal.text('Nueva Planificación');
         mensajeModal.html('');
         btnCrud.attr('name', 'store');
         btnCrud.text('Agregar');
@@ -127,30 +27,23 @@ $(document).ready(function () {
     //#endregion
 
     //#region Funciones Prepare
-    function prepareSelect(id)
-    {
-        tituloModal.text('Detalles sobre el Residente');
+    function prepareSelect(id) {
+        tituloModal.text('Detalles sobre la Planificación');
         $('#rsdtForm').find(':input').prop('disabled', true);
-        $('#password').attr('type', 'password');
         $('#botonesModal').addClass('opacity-0');
         show(id);
     }
 
-    function prepareEdit(id)
-    {
-        tituloModal.text('Editar Residente');
+    function prepareEdit(id) {
+        tituloModal.text('Editar Planificación');
         $('#rsdtForm').find(':input').prop('disabled', false);
-        $('#password').attr('type', 'password');
         show(id);
     }
 
-    function prepareDelete(id)
-    {
-        tituloModal.text('Eliminar Residente');
-        mensajeModal.html('El siguiente residente se eliminará a continuación,<br>¿Está seguro?');
+    function prepareDelete(id) {
+        tituloModal.text('Eliminar Planificación');
+        mensajeModal.html('La siguiente Planificación se eliminará a continuación,<br>¿Está seguro?');
         $('#rsdtForm').find(':input:not(button)').prop('disabled', true);
-
-        $('#password').attr('type', 'password');
         show(id);
     }
     //#endregion
@@ -257,28 +150,32 @@ $(document).ready(function () {
                     html = `
                     <thead class="table-secondary fw-semibold">
                         <tr>
-                            <th>CI</th>
-                            <th>NOMBRE</th>
-                            <th>FECHA DE NACIMIENTO</th>
-                            <th>TELÉFONO</th>
-                            <th>ES REP. FAMILIAR</th>
+                            <th>ID</th>
+                            <th>MOTIVO</th>
+                            <th>DESCRIPCIÓN</th>
+                            <th>AREA</th>
+                            <th>PAGO</th>
+                            <th>INICIO</th>
+                            <th>FIN</th>
                             <th width="200">ACCIONES</th>
                         </tr>
                     </thead>
                     <tbody>
                 `;
-                    response.data.data.forEach(residente => {
+                    response.data.data.forEach(planificacion => {
                         html += `
                         <tr>
-                            <td>${residente.ci_rsdt}</td>
-                            <td>${residente.nombre_rsdt} ${residente.apellidop_rsdt} ${residente.apellidom_rsdt}</td>
-                            <td>${residente.fechanac_rsdt}</td>
-                            <td>${residente.telefono_rsdt}</td>
-                            <td>${residente.nombre_representante == null ? 'Sí' : 'No'}</td>
+                            <td>${planificacion.id_plan}</td>
+                            <td>${planificacion.motivo_plan}</td>
+                            <td>${planificacion.descripcion_plan}</td>
+                            <td>${planificacion.area_plan}</td>
+                            <td>${planificacion.pago_plan}</td>
+                            <td>${planificacion.inicio_plan}</td>
+                            <td>${planificacion.fin_plan}</td>
                             <td>
-                                <button id='btnSelect' data-id="${residente.id_rsdt}" class='btn p-0 btn-sm btn-info text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-magnifying-glass-plus'></i></button>
-                                <button id='btnEdit' data-id="${residente.id_rsdt}" class='btn p-0 btn-sm btn-secondary text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-pen-to-square'></i></button>
-                                <button id='btnDelete' data-id="${residente.id_rsdt}" class='btn p-0 btn-sm btn-primary' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-trash'></i></button>
+                                <button id='btnSelect' data-id="${planificacion.id_plan}" class='btn p-0 btn-sm btn-info text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-magnifying-glass-plus'></i></button>
+                                <button id='btnEdit' data-id="${planificacion.id_plan}" class='btn p-0 btn-sm btn-secondary text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-pen-to-square'></i></button>
+                                <button id='btnDelete' data-id="${planificacion.id_plan}" class='btn p-0 btn-sm btn-primary' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-trash'></i></button>
                             </td>
                         </tr>
                     `;
@@ -290,10 +187,10 @@ $(document).ready(function () {
                     generatePaginationButtons(response.data.current_page, response.data.last_page, url, search);
                     seccionTotalResultados.removeClass('d-none');
                 } else {
-                    error.html('No se encontraron resultados.')
                     let paginationContainer = $('#pagination-container');
                     paginationContainer.empty();
                     seccionTotalResultados.addClass('d-none');
+                    error.html('No se encontraron resultados.')
                 }
             },
             error: function (xhr, status, error) {
@@ -312,8 +209,8 @@ $(document).ready(function () {
             success: function (response) {
                 console.log(response);
                 if (response.state) {
-                    searchInput.val(response.data.residente.ci_rsdt);
-                    index(response.data.residente.ci_rsdt);
+                    searchInput.val(response.data.id_plan);
+                    index(response.data.id_plan);
                     modalMain.modal('hide');
                     setTimeout(function () {
                         searchInput.focus();
@@ -330,30 +227,14 @@ $(document).ready(function () {
     }
 
     function llenarFormulario(data) {
-        let residente = data.residente;
-        let user = data.user;
-        $('#id_rsdt').val(residente.id_rsdt);
-        $('#ci_rsdt').val(residente.ci_rsdt);
-        $('#nombre_rsdt').val(residente.nombre_rsdt);
-        $('#apellidop_rsdt').val(residente.apellidop_rsdt);
-        $('#apellidom_rsdt').val(residente.apellidom_rsdt);
-        $('#fechanac_rsdt').val(residente.fechanac_rsdt);
-        $('#telefono_rsdt').val(residente.telefono_rsdt);
-
-        if (residente.rep_fam_id_rsdt == null)
-        {
-            $('#email').val(user.email);
-            $('#password').attr('type', 'password');
-            $('#password').val(user.password);
-            $('#rol').val(data.rol[0]);
-            $('#es_representante').prop('checked', true).trigger('input');
-        }
-        else
-        {
-            $('#rep_fam_id_rsdt').val(residente.rep_fam_id_rsdt).trigger('change');
-            $('#es_representante').prop('checked', false).trigger('input');
-        }
-
+        let planificacion = data;
+        $('#id_plan').val(planificacion.id_plan);
+        $('#motivo_plan').val(planificacion.motivo_plan);
+        $('#descripcion_plan').val(planificacion.descripcion_plan);
+        $('#area_plan').val(planificacion.area_plan);
+        $('#pago_plan').val(planificacion.pago_plan);
+        $('#inicio_plan').val(planificacion.inicio_plan);
+        $('#fin_plan').val(planificacion.fin_plan);
     }
 
     function show(id) {
@@ -363,7 +244,7 @@ $(document).ready(function () {
             type: 'GET',
             data: { _token: _token },
             dataType: 'json',
-            success: function(response) {
+            success: function (response) {
                 if (response.state) {
                     llenarFormulario(response.data);
                     modalMain.modal('show');
@@ -371,7 +252,7 @@ $(document).ready(function () {
                     console.error(response.message);
                 }
             },
-            error: function(xhr, status, error) {
+            error: function (xhr, status, error) {
                 console.error(xhr.responseText);
             }
         });
@@ -389,8 +270,8 @@ $(document).ready(function () {
                 if (response.state) {
                     // Actualización exitosa
                     console.log("¡Actualización exitosa!");
-                    searchInput.val(response.data.residente.ci_rsdt);
-                    index(response.data.residente.ci_rsdt);
+                    searchInput.val(response.data.id_plan);
+                    index(response.data.id_plan);
                     modalMain.modal('hide');
                     setTimeout(function () {
                         searchInput.focus();
@@ -406,15 +287,14 @@ $(document).ready(function () {
         });
     }
 
-    function destroy(id)
-    {
+    function destroy(id) {
         let _token = $('meta[name="csrf-token"]').attr('content');
 
         $.ajax({
             url: urlDelete + id,
             type: 'DELETE',
             data: { _token: _token },
-            success: function(response) {
+            success: function (response) {
                 if (response.state) {
                     console.log(response.message);
                     searchInput.val('');
@@ -424,7 +304,7 @@ $(document).ready(function () {
                     console.error(response.message);
                 }
             },
-            error: function(xhr, status, error) {
+            error: function (xhr, status, error) {
                 console.error(xhr.responseText);
             }
         });
@@ -434,24 +314,17 @@ $(document).ready(function () {
     //#region Interacción DOM
     //#region Extras
     //#region Select2 con Buscador
-    $("#rep_fam_id_rsdt").select2({
+    $("#propietario_id_mas").select2({
         theme: "bootstrap-5",
         selectionCssClass: "select2--small",
         dropdownCssClass: "select2--small",
         dropdownParent: $('#modalMain')
     });
     //#endregion
-    //#region Colapso
-    $("#es_representante").on('input', function () {
-        collapseWithCheck($(this), $("#campos_representante"), $("#rep_fam_id_rsdt"), $("#campos_usuario"), $("#email"));
-    });
-    //#endregion
     //#endregion
 
     //#region Funciones de Carga Inicial
     index();
-    getResidentesOnSelect();
-    getRolesOnSelect();
     //#endregion
 
     //#region Busqueda
@@ -468,7 +341,7 @@ $(document).ready(function () {
     btnCrud.click(function (e) {
         e.preventDefault();
         let action = $(this).attr('name');
-        let id = $('#id_rsdt').val();
+        let id = $('#id_plan').val();
         switch (action) {
             case "store":
                 {

@@ -2,6 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\MascotaController;
+use App\Http\Controllers\PersonalController;
+use App\Http\Controllers\PlanificacionController;
 use App\Http\Controllers\ResidenteController;
 
 //Rutas para reestablecer contraseña
@@ -36,3 +39,28 @@ Route::get('/Visitas', [ResidenteController::class, 'showIndex'])->name('Visitas
 Route::get('/Planificaciones', [ResidenteController::class, 'showIndex'])->name('Planificaciones');
 Route::get('/Parking', [ResidenteController::class, 'showIndex'])->name('Parking');
 
+// Rutas para personal de servicio
+Route::get('/Personal/indexRoles', [PersonalController::class, 'getRoles'])->name('indexRolesPs');
+Route::get('/Personal', [PersonalController::class, 'showIndex'])->middleware('auth')->name('Personal');
+Route::get('/Personal/index', [PersonalController::class, 'index'])->name('indexPs');
+Route::post('/Personal/store', [PersonalController::class, 'store'])->name('storePs');
+Route::get('/Personal/{id}', [PersonalController::class, 'show'])->name('showPs');
+Route::put('/Personal/{id}', [PersonalController::class, 'update'])->name('updatePs');
+Route::delete('/Personal/{id}', [PersonalController::class, 'destroy'])->name('destroyPs');
+
+// Rutas para Mascotas
+Route::get('/Mascotas/indexRep', [MascotaController::class, 'getRepresentantes'])->name('indexRepMas');
+Route::get('/Mascotas', [MascotaController::class, 'showIndex'])->middleware('auth')->name('Mascotas');
+Route::get('/Mascotas/index', [MascotaController::class, 'index'])->name('indexMas');
+Route::post('/Mascotas/store', [MascotaController::class, 'store'])->name('storeMas');
+Route::get('/Mascotas/{id}', [MascotaController::class, 'show'])->name('showMas');
+Route::put('/Mascotas/{id}', [MascotaController::class, 'update'])->name('updateMas');
+Route::delete('/Mascotas/{id}', [MascotaController::class, 'destroy'])->name('destroyMas');
+
+// Rutas para Planificaciones
+Route::get('/Planificaciones', [PlanificacionController::class, 'showIndex'])->middleware('auth')->name('Planificaciones');
+Route::get('/Planificaciones/index', [PlanificacionController::class, 'index'])->name('indexPlan');
+Route::post('/Planificaciones/store', [PlanificacionController::class, 'store'])->name('storePlan');
+Route::get('/Planificaciones/{id}', [PlanificacionController::class, 'show'])->name('showPlan');
+Route::put('/Planificaciones/{id}', [PlanificacionController::class, 'update'])->name('updatePlan');
+Route::delete('/Planificaciones/{id}', [PlanificacionController::class, 'destroy'])->name('destroyPlan');

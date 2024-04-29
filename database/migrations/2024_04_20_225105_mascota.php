@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('mascota', function (Blueprint $table) {
             $table->increments('id_mas');
+            $table->string('nombre_mas', 30);
             $table->string('tipo_mas', 30);
-            $table->unsignedInteger('cantidad_mas');
             $table->unsignedInteger('propietario_id_mas');
             $table->foreign('propietario_id_mas')->references('id_rsdt')->on('residente')->onDelete('cascade')->onUpdate('cascade');
             $table->timestamps();

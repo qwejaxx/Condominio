@@ -13,7 +13,7 @@ class ResidenteSeeder extends Seeder
      */
     public function run(): void
     {
-        /* Residente::create([
+        Residente::create([
             'ci_rsdt' => '12525107',
             'nombre_rsdt' => 'Ivan',
             'apellidop_rsdt' => 'Rosales',
@@ -44,7 +44,7 @@ class ResidenteSeeder extends Seeder
             'telefono_rsdt' => '70402912',
             'usuario_id_rsdt' => null,
             'rep_fam_id_rsdt' => 2,
-        ]); */
+        ]);
 
         for ($i = 0; $i <= 50; $i++)
         {

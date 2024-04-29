@@ -190,6 +190,7 @@ class ResidenteController extends Controller
 
     public function update(Request $request, $id)
     {
+        $user = null;
         try {
             DB::beginTransaction();
 
@@ -203,6 +204,7 @@ class ResidenteController extends Controller
             $residente->telefono_rsdt = $request->telefono_rsdt;
 
             if ($request->has('es_representante')) {
+
                 if ($residente->usuario_id_rsdt) {
                     $user = User::findOrFail($residente->usuario_id_rsdt);
                     $user->name = $request->nombre_rsdt;
@@ -223,9 +225,16 @@ class ResidenteController extends Controller
                     $residente->rep_fam_id_rsdt = null;
                 }
             } else {
+                $aux = $residente->usuario_id_rsdt;
+                $residente->usuario_id_rsdt = null;
+                $residente->save();
+                if ($aux) {
+                    $user = User::findOrFail($aux);
+                    $user->roles()->detach();
+                    $user->delete();
+                }
                 $residente->rep_fam_id_rsdt = $request->rep_fam_id_rsdt;
             }
-
 
             $residente->save();
 
