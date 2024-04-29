@@ -16,8 +16,8 @@ return new class extends Migration
             $table->unsignedInteger('departamento_id_reg');
             $table->unsignedInteger('residente_id_reg');
             $table->string('tipoadq_reg', 20);
-            $table->dateTime('inicio_reg');
-            $table->dateTime('fin_reg');
+            $table->dateTime('inicio_reg')->nullable();
+            $table->dateTime('fin_reg')->nullable();
             $table->decimal('pago_reg', 10, 2);
             $table->foreign('departamento_id_reg')->references('id_dpto')->on('departamento')->onDelete('cascade')->onUpdate('cascade');
             $table->foreign('residente_id_reg')->references('id_rsdt')->on('residente')->onDelete('cascade')->onUpdate('cascade');

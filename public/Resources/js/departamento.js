@@ -5,7 +5,8 @@ $(document).ready(function () {
     let mensajeModal = $('#modal-mensaje');
     let searchInput = $('#search');
     let btnCrud = $('#btnCrud');
-    let tableIndex = $('#tabla');
+    /* let tableIndex = $('#tabla'); */
+    let cardsDep = $('#cardsDep');
     let urlIndex = $('#url-index').val();
     let urlStore = $('#url-store').val();
     let urlShow = $('#url-show').val() + '/';
@@ -45,9 +46,9 @@ $(document).ready(function () {
         }
     }
 
-    function getResidentesOnSelect() {
+    function getRepresentantesOnSelect() {
         let _token = $('meta[name="csrf-token"]').attr('content');
-        let select = $("#rep_fam_id_rsdt");
+        let select = $("#residente_id_dpto");
         let url = select.data('url');
 
         $.ajax(
@@ -78,9 +79,9 @@ $(document).ready(function () {
             });
     }
 
-    function getRolesOnSelect() {
+    function getParqueosOnSelect() {
         let _token = $('meta[name="csrf-token"]').attr('content');
-        let select = $("#rol");
+        let select = $("#parqueo_id_dpto");
         let url = select.data('url');
 
         $.ajax(
@@ -90,14 +91,14 @@ $(document).ready(function () {
                 data: { _token: _token },
                 dataType: 'json',
                 success: function (response) {
-                    let roles = response.data;
+                    let parqueos = response.data;
 
-                    if (roles.length > 0) {
+                    if (parqueos.length > 0) {
                         select.empty();
-                        roles.forEach(rol => {
+                        parqueos.forEach(parqueo => {
                             select.append($("<option>",
                                 {
-                                    value: rol.name, text: rol.name
+                                    value: parqueo.id_park, text: parqueo.codigo_park
                                 }));
                         });
                     }
@@ -116,8 +117,8 @@ $(document).ready(function () {
         $('#rsdtForm')[0].reset(); // Reiniciar Formulario
         $('#rsdtForm').find(':input').prop('disabled', false);
         $('#botonesModal').removeClass('opacity-0');
-        $('#campos_representante').addClass('show');
-        $('#campos_usuario').removeClass('show');
+        $('#campos_propietario').addClass('show');
+        $('#campos_parqueo').removeClass('show');
         $('#rep_fam_id_rsdt').val($('#rep_fam_id_rsdt option:first').val()).trigger('change');
         tituloModal.text('Nuevo Residente');
         mensajeModal.html('');
@@ -129,28 +130,24 @@ $(document).ready(function () {
     //#region Funciones Prepare
     function prepareSelect(id)
     {
-        tituloModal.text('Detalles sobre el Residente');
+        tituloModal.text('Detalles sobre el Departamento');
         $('#rsdtForm').find(':input').prop('disabled', true);
-        $('#password').attr('type', 'password');
         $('#botonesModal').addClass('opacity-0');
         show(id);
     }
 
     function prepareEdit(id)
     {
-        tituloModal.text('Editar Residente');
+        tituloModal.text('Editar Departamento');
         $('#rsdtForm').find(':input').prop('disabled', false);
-        $('#password').attr('type', 'password');
         show(id);
     }
 
     function prepareDelete(id)
     {
-        tituloModal.text('Eliminar Residente');
-        mensajeModal.html('El siguiente residente se eliminará a continuación,<br>¿Está seguro?');
+        tituloModal.text('Eliminar Departamento');
+        mensajeModal.html('El siguiente departamento se eliminará a continuación,<br>¿Está seguro?');
         $('#rsdtForm').find(':input:not(button)').prop('disabled', true);
-
-        $('#password').attr('type', 'password');
         show(id);
     }
     //#endregion
@@ -238,7 +235,7 @@ $(document).ready(function () {
     //#endregion
 
     //#region Funciones CRUD
-    function index(search = "", url = urlIndex + '?page=1') {
+    /* function index(search = "", url = urlIndex + '?page=1') {
         let _token = $('meta[name="csrf-token"]').attr('content');
         let totalResultados = $('#totalResultados').val();
         let error = $('#index-error');
@@ -253,38 +250,118 @@ $(document).ready(function () {
             success: function (response) {
                 tableIndex.empty();
                 if (response.data.data.length > 0) {
+                    console.log(response);
                     error.html('');
                     html = `
                     <thead class="table-secondary fw-semibold">
                         <tr>
-                            <th>CI</th>
-                            <th>NOMBRE</th>
-                            <th>FECHA DE NACIMIENTO</th>
-                            <th>TELÉFONO</th>
-                            <th>ES REP. FAMILIAR</th>
+                            <th>CÓDIGO</th>
+                            <th>PRECIO DE COMPRA</th>
+                            <th>PRECIO DE ALQUILER POR DÍA</th>
+                            <th>RESIDENTE</th>
+                            <th>PARQUEO ASIGNADO</th>
                             <th width="200">ACCIONES</th>
                         </tr>
                     </thead>
                     <tbody>
                 `;
-                    response.data.data.forEach(residente => {
+                    response.data.data.forEach(departamento => {
                         html += `
                         <tr>
-                            <td>${residente.ci_rsdt}</td>
-                            <td>${residente.nombre_rsdt} ${residente.apellidop_rsdt} ${residente.apellidom_rsdt}</td>
-                            <td>${residente.fechanac_rsdt}</td>
-                            <td>${residente.telefono_rsdt}</td>
-                            <td>${residente.rep_fam_id_rsdt == null ? 'Sí' : 'No'}</td>
+                            <td>${departamento.codigo_dpto}</td>
+                            <td>${departamento.precio_dpto}</td>
+                            <td>${departamento.precioa_dpto}</td>
+                            <td>${departamento.residente_id_dpto}</td>
+                            <td>${departamento.parqueo_id_dpto}</td>
                             <td>
-                                <button id='btnSelect' data-id="${residente.id_rsdt}" class='btn p-0 btn-sm btn-info text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-magnifying-glass-plus'></i></button>
-                                <button id='btnEdit' data-id="${residente.id_rsdt}" class='btn p-0 btn-sm btn-secondary text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-pen-to-square'></i></button>
-                                <button id='btnDelete' data-id="${residente.id_rsdt}" class='btn p-0 btn-sm btn-primary' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-trash'></i></button>
+                                <button id='btnSelect' data-id="${departamento.id_dpto}" class='btn p-0 btn-sm btn-info text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-magnifying-glass-plus'></i></button>
+                                <button id='btnEdit' data-id="${departamento.id_dpto}" class='btn p-0 btn-sm btn-secondary text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-pen-to-square'></i></button>
+                                <button id='btnDelete' data-id="${departamento.id_dpto}" class='btn p-0 btn-sm btn-primary' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-trash'></i></button>
                             </td>
                         </tr>
                     `;
                     });
                     html += `</tbody>`;
                     tableIndex.append(html);
+
+                    // Llamar a la función para generar los botones de paginación
+                    generatePaginationButtons(response.data.current_page, response.data.last_page, url, search);
+                    seccionTotalResultados.removeClass('d-none');
+                } else {
+                    error.html('No se encontraron resultados.')
+                    let paginationContainer = $('#pagination-container');
+                    paginationContainer.empty();
+                    seccionTotalResultados.addClass('d-none');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    } */
+
+    function index(search = "", url = urlIndex + '?page=1') {
+        let _token = $('meta[name="csrf-token"]').attr('content');
+        let totalResultados = $('#totalResultados').val();
+        let error = $('#index-error');
+        let seccionTotalResultados = $('#seccionTotalResultados');
+        let html = "";
+
+        $.ajax({
+            url: url,
+            type: 'GET',
+            data: { _token: _token, search: search, totalResultados: totalResultados },
+            dataType: 'json',
+            success: function (response) {
+                cardsDep.empty();
+                if (response.data.data.length > 0) {
+                    console.log(response);
+                    error.html('');
+                    html = ``;
+                    response.data.data.forEach(departamento => {
+                        let adquisicion = departamento.adquisicion;
+                        let residente = departamento.residente;
+                        let parqueo = departamento.parqueo;
+
+                        html += `
+                            <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h6 class="m-0">DEPARTAMENTO | ${departamento.codigo_dpto}</h6>
+                                            <div class="dropend">
+                                                <button class="btn-more-options" type="button" data-bs-toggle="dropdown">
+                                                    <i class="fa-solid fa-ellipsis"></i>
+                                                </button>
+                                                <ul class="dropdown-menu p-0" style="width: auto; line-height: 1px;">
+                                                    <li>
+                                                        <button id="btnSelect" data-id="${departamento.id_dpto}" class="dropdown-item rounded-top px-2 py-2" href="#"><i
+                                                                class="fa-solid fa-clipboard me-2"></i>Detalles</button>
+                                                    </li>
+                                                    <li>
+                                                        <button id="btnEdit" data-id="${departamento.id_dpto}" class="dropdown-item px-2 py-2" href="#"><i
+                                                                class="fa-solid fa-pen-to-square me-2"></i>Editar</button>
+                                                    </li>
+                                                    <li>
+                                                        <button id="btnDelete" data-id="${departamento.id_dpto}" class="dropdown-item rounded-bottom px-2 py-2" href="#"><i
+                                                                class="fa-solid fa-trash me-2"></i>Eliminar</button>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h2 class="m-0">${adquisicion ? (adquisicion.tipoadq_reg == 'Compra' ? 'COMPRADO' : (adquisicion.tipoadq_reg == 'Alquiler' ? 'ALQUILADO' : 'DISPONIBLE')) : 'DISPONIBLE'}</h2>
+                                            <div>${residente ? `Por: ${residente.nombre_rsdt} ${residente.apellidop_rsdt}` : 'Sin residente'}</div>
+                                            <hr>
+                                            <h6 class="m-0">PARQUEO ASIGNADO | ${parqueo ? (parqueo.codigo_park ?? 'NINGUNO') : 'NINGUNO'}</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    cardsDep.append(html);
 
                     // Llamar a la función para generar los botones de paginación
                     generatePaginationButtons(response.data.current_page, response.data.last_page, url, search);
@@ -312,8 +389,8 @@ $(document).ready(function () {
             success: function (response) {
                 console.log(response);
                 if (response.state) {
-                    searchInput.val(response.data.residente.ci_rsdt);
-                    index(response.data.residente.ci_rsdt);
+                    searchInput.val(response.data.codigo_dpto);
+                    index(response.data.codigo_dpto);
                     modalMain.modal('hide');
                     setTimeout(function () {
                         searchInput.focus();
@@ -330,30 +407,13 @@ $(document).ready(function () {
     }
 
     function llenarFormulario(data) {
-        let residente = data.residente;
-        let user = data.user;
-        $('#id_rsdt').val(residente.id_rsdt);
-        $('#ci_rsdt').val(residente.ci_rsdt);
-        $('#nombre_rsdt').val(residente.nombre_rsdt);
-        $('#apellidop_rsdt').val(residente.apellidop_rsdt);
-        $('#apellidom_rsdt').val(residente.apellidom_rsdt);
-        $('#fechanac_rsdt').val(residente.fechanac_rsdt);
-        $('#telefono_rsdt').val(residente.telefono_rsdt);
-
-        if (residente.rep_fam_id_rsdt == null)
-        {
-            $('#email').val(user.email);
-            $('#password').attr('type', 'password');
-            $('#password').val(user.password);
-            $('#rol').val(data.rol[0]);
-            $('#es_representante').prop('checked', true).trigger('input');
-        }
-        else
-        {
-            $('#rep_fam_id_rsdt').val(residente.rep_fam_id_rsdt).trigger('change');
-            $('#es_representante').prop('checked', false).trigger('input');
-        }
-
+        let departamento = data;
+        $('#id_dpto').val(departamento.id_dpto);
+        $('#codigo_dpto').val(departamento.codigo_dpto);
+        $('#precio_dpto').val(departamento.precio_dpto);
+        $('#precioa_dpto').val(departamento.precioa_dpto);
+        $('#residente_id_dpto').val(departamento.residente_id_dpto);
+        $('#parqueo_id_dpto').val(departamento.parqueo_id_dpto);
     }
 
     function show(id) {
@@ -389,8 +449,8 @@ $(document).ready(function () {
                 if (response.state) {
                     // Actualización exitosa
                     console.log("¡Actualización exitosa!");
-                    searchInput.val(response.data.residente.ci_rsdt);
-                    index(response.data.residente.ci_rsdt);
+                    searchInput.val(response.data.codigo_dpto);
+                    index(response.data.codigo_dpto);
                     modalMain.modal('hide');
                     setTimeout(function () {
                         searchInput.focus();
@@ -432,26 +492,10 @@ $(document).ready(function () {
     //#endregion
 
     //#region Interacción DOM
-    //#region Extras
-    //#region Select2 con Buscador
-    $("#rep_fam_id_rsdt").select2({
-        theme: "bootstrap-5",
-        selectionCssClass: "select2--small",
-        dropdownCssClass: "select2--small",
-        dropdownParent: $('#modalMain')
-    });
-    //#endregion
-    //#region Colapso
-    $("#es_representante").on('input', function () {
-        collapseWithCheck($(this), $("#campos_representante"), $("#rep_fam_id_rsdt"), $("#campos_usuario"), $("#email"));
-    });
-    //#endregion
-    //#endregion
-
     //#region Funciones de Carga Inicial
     index();
-    getResidentesOnSelect();
-    getRolesOnSelect();
+    getRepresentantesOnSelect();
+    getParqueosOnSelect();
     //#endregion
 
     //#region Busqueda
@@ -468,7 +512,7 @@ $(document).ready(function () {
     btnCrud.click(function (e) {
         e.preventDefault();
         let action = $(this).attr('name');
-        let id = $('#id_rsdt').val();
+        let id = $('#id_dpto').val();
         switch (action) {
             case "store":
                 {
@@ -491,21 +535,21 @@ $(document).ready(function () {
     //#endregion
 
     //#region Activacion de botones de CRUD
-    tableIndex.on('click', '#btnSelect', function () {
+    cardsDep.on('click', '#btnSelect', function () {
         let id = $(this).data('id');
         btnCrud.attr('name', 'show');
         btnCrud.text('Show');
         prepareSelect(id);
     });
 
-    tableIndex.on('click', '#btnEdit', function () {
+    cardsDep.on('click', '#btnEdit', function () {
         let id = $(this).data('id');
         btnCrud.attr('name', 'edit');
         btnCrud.text('Editar');
         prepareEdit(id);
     });
 
-    tableIndex.on('click', '#btnDelete', function () {
+    cardsDep.on('click', '#btnDelete', function () {
         let id = $(this).data('id');
         btnCrud.attr('name', 'delete');
         btnCrud.text('Eliminar');

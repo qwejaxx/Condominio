@@ -23,23 +23,44 @@ class ResidenteFactory extends Factory
 
     public function definition(): array
     {
-        // Obtener todos los IDs de los Residentes
-        $residenteIds = Residente::whereNull('rep_fam_id_rsdt')->pluck('id_rsdt')->toArray();
-        $residenteIds[] = null;
+        $esVisitante = rand(0, 9);
 
-        // Seleccionar un ID aleatorio de la lista
-        $randomResidenteId = !empty($residenteIds) ? $residenteIds[array_rand($residenteIds)] : null;
-
-        // Crear un nuevo usuario solo si no hay un Residente aleatorio
         $nombre = $this->faker->firstName();
         $apellidop = $this->faker->lastName();
         $apellidom = $this->faker->lastName();
 
-        // Obtener un Rol aleatorio
-        $roles = Role::pluck('id')->toArray();
-        $randomRoleId = !empty($roles) ? $roles[array_rand($roles)] : null;
+        if ($esVisitante > 6) //
+        {
+            $usuarioId = null;
+            $randomResidenteId = null;
+        }
+        else
+        {
+            // Obtener todos los Ids de los Representantes
+            $residenteIds = Residente::whereHas('usuario', function ($query) {
+                $query->whereHas('roles', function ($roleQuery) {
+                    $roleQuery->whereIn('name', ['Administrador', 'Residente']);
+                });
+            })->pluck('id_rsdt')->toArray();
 
-        $usuarioId = $randomResidenteId == null ? User::factory()->create(['name' => $nombre . ' ' . $apellidop])->assignRole($randomRoleId)->id : null;
+            $residenteIds[] = null;
+
+            // Seleccionar un ID Representante aleatorio de la lista
+            $randomResidenteId = !empty($residenteIds) ? $residenteIds[array_rand($residenteIds)] : null;
+
+            if ($randomResidenteId)
+            {
+                $usuarioId = null;
+            }
+            else
+            {
+                // Obtener un Rol aleatorio
+                $roles = Role::pluck('id')->toArray();
+                $randomRoleId = !empty($roles) ? $roles[array_rand($roles)] : null;
+                $usuarioId = User::factory()->create(['name' => $nombre . ' ' . $apellidop])->assignRole($randomRoleId)->id;
+            }
+
+        }
 
         return [
             'ci_rsdt' => $this->faker->numerify('########'),

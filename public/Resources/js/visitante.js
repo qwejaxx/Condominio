@@ -14,112 +14,12 @@ $(document).ready(function () {
     //#endregion
 
     //#region Funciones Extras
-    function collapseWithCheck(inputCheck, seccionVisible, inputVisible, seccionNoVisible, inputNoVisible) {
-        let temporizador;
-        if (inputCheck.is(':checked')) {
-            inputCheck.prop('disabled', true);
-            clearTimeout(temporizador);
-            temporizador = setTimeout(function () {
-                seccionVisible.collapse('hide');
-                seccionNoVisible.collapse('show');
-                setTimeout(function () {
-                    inputNoVisible.focus();
-                    inputCheck.prop('disabled', false);
-                    if (btnCrud.attr('name') == "show" || btnCrud.attr('name') == "delete")
-                    inputCheck.prop('disabled', true);
-                }, 250);
-            }, 200);
-        }
-        else {
-            inputCheck.prop('disabled', true);
-            temporizador = setTimeout(function () {
-                seccionVisible.collapse('show');
-                setTimeout(function () {
-                    inputVisible.focus();
-                    inputCheck.prop('disabled', false);
-                    if (btnCrud.attr('name') == "show" || btnCrud.attr('name') == "delete")
-                    inputCheck.prop('disabled', true);
-                }, 250);
-                seccionNoVisible.collapse('hide');
-            }, 200);
-        }
-    }
-
-    function getResidentesOnSelect() {
-        let _token = $('meta[name="csrf-token"]').attr('content');
-        let select = $("#rep_fam_id_rsdt");
-        let url = select.data('url');
-
-        $.ajax(
-            {
-                url: url,
-                type: 'GET',
-                data: { _token: _token },
-                dataType: 'json',
-                success: function (response) {
-                    let representantes = response.data;
-
-                    if (representantes.length > 0) {
-                        select.empty();
-                        representantes.forEach(representante => {
-                            select.append($("<option>",
-                                {
-                                    value: representante.id_rsdt, text: representante.nombre_rsdt + ' ' + representante.apellidop_rsdt
-                                }));
-                        });
-                    }
-                    else {
-                        console.log("No hay resultados");
-                    }
-                },
-                error: function (xhr, status, error) {
-                    console.log("Error en la solicitud AJAX: " + error);
-                }
-            });
-    }
-
-    function getRolesOnSelect() {
-        let _token = $('meta[name="csrf-token"]').attr('content');
-        let select = $("#rol");
-        let url = select.data('url');
-
-        $.ajax(
-            {
-                url: url,
-                type: 'GET',
-                data: { _token: _token },
-                dataType: 'json',
-                success: function (response) {
-                    let roles = response.data;
-
-                    if (roles.length > 0) {
-                        select.empty();
-                        roles.forEach(rol => {
-                            select.append($("<option>",
-                                {
-                                    value: rol.name, text: rol.name
-                                }));
-                        });
-                    }
-                    else {
-                        console.log("No hay resultados");
-                    }
-                },
-                error: function (xhr, status, error) {
-                    console.log("Error en la solicitud AJAX: " + error);
-                }
-            });
-    }
-
     function resetAllOnModal()
     {
         $('#rsdtForm')[0].reset(); // Reiniciar Formulario
         $('#rsdtForm').find(':input').prop('disabled', false);
         $('#botonesModal').removeClass('opacity-0');
-        $('#campos_representante').addClass('show');
-        $('#campos_usuario').removeClass('show');
-        $('#rep_fam_id_rsdt').val($('#rep_fam_id_rsdt option:first').val()).trigger('change');
-        tituloModal.text('Nuevo Residente');
+        tituloModal.text('Nuevo Visitante');
         mensajeModal.html('');
         btnCrud.attr('name', 'store');
         btnCrud.text('Agregar');
@@ -129,28 +29,24 @@ $(document).ready(function () {
     //#region Funciones Prepare
     function prepareSelect(id)
     {
-        tituloModal.text('Detalles sobre el Residente');
+        tituloModal.text('Detalles sobre el Visitante');
         $('#rsdtForm').find(':input').prop('disabled', true);
-        $('#password').attr('type', 'password');
         $('#botonesModal').addClass('opacity-0');
         show(id);
     }
 
     function prepareEdit(id)
     {
-        tituloModal.text('Editar Residente');
+        tituloModal.text('Editar Visitante');
         $('#rsdtForm').find(':input').prop('disabled', false);
-        $('#password').attr('type', 'password');
         show(id);
     }
 
     function prepareDelete(id)
     {
-        tituloModal.text('Eliminar Residente');
-        mensajeModal.html('El siguiente residente se eliminará a continuación,<br>¿Está seguro?');
+        tituloModal.text('Eliminar Visitante');
+        mensajeModal.html('El siguiente visitante se eliminará a continuación,<br>¿Está seguro?');
         $('#rsdtForm').find(':input:not(button)').prop('disabled', true);
-
-        $('#password').attr('type', 'password');
         show(id);
     }
     //#endregion
@@ -261,24 +157,22 @@ $(document).ready(function () {
                             <th>NOMBRE</th>
                             <th>FECHA DE NACIMIENTO</th>
                             <th>TELÉFONO</th>
-                            <th>ES REP. FAMILIAR</th>
                             <th width="200">ACCIONES</th>
                         </tr>
                     </thead>
                     <tbody>
                 `;
-                    response.data.data.forEach(residente => {
+                    response.data.data.forEach(personal => {
                         html += `
                         <tr>
-                            <td>${residente.ci_rsdt}</td>
-                            <td>${residente.nombre_rsdt} ${residente.apellidop_rsdt} ${residente.apellidom_rsdt}</td>
-                            <td>${residente.fechanac_rsdt}</td>
-                            <td>${residente.telefono_rsdt}</td>
-                            <td>${residente.rep_fam_id_rsdt == null ? 'Sí' : 'No'}</td>
+                            <td>${personal.ci_rsdt}</td>
+                            <td>${personal.nombre_rsdt} ${personal.apellidop_rsdt} ${personal.apellidom_rsdt}</td>
+                            <td>${personal.fechanac_rsdt}</td>
+                            <td>${personal.telefono_rsdt}</td>
                             <td>
-                                <button id='btnSelect' data-id="${residente.id_rsdt}" class='btn p-0 btn-sm btn-info text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-magnifying-glass-plus'></i></button>
-                                <button id='btnEdit' data-id="${residente.id_rsdt}" class='btn p-0 btn-sm btn-secondary text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-pen-to-square'></i></button>
-                                <button id='btnDelete' data-id="${residente.id_rsdt}" class='btn p-0 btn-sm btn-primary' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-trash'></i></button>
+                                <button id='btnSelect' data-id="${personal.id_rsdt}" class='btn p-0 btn-sm btn-info text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-magnifying-glass-plus'></i></button>
+                                <button id='btnEdit' data-id="${personal.id_rsdt}" class='btn p-0 btn-sm btn-secondary text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-pen-to-square'></i></button>
+                                <button id='btnDelete' data-id="${personal.id_rsdt}" class='btn p-0 btn-sm btn-primary' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-trash'></i></button>
                             </td>
                         </tr>
                     `;
@@ -312,8 +206,8 @@ $(document).ready(function () {
             success: function (response) {
                 console.log(response);
                 if (response.state) {
-                    searchInput.val(response.data.residente.ci_rsdt);
-                    index(response.data.residente.ci_rsdt);
+                    searchInput.val(response.data.ci_rsdt);
+                    index(response.data.ci_rsdt);
                     modalMain.modal('hide');
                     setTimeout(function () {
                         searchInput.focus();
@@ -330,8 +224,7 @@ $(document).ready(function () {
     }
 
     function llenarFormulario(data) {
-        let residente = data.residente;
-        let user = data.user;
+        let residente = data;
         $('#id_rsdt').val(residente.id_rsdt);
         $('#ci_rsdt').val(residente.ci_rsdt);
         $('#nombre_rsdt').val(residente.nombre_rsdt);
@@ -339,21 +232,6 @@ $(document).ready(function () {
         $('#apellidom_rsdt').val(residente.apellidom_rsdt);
         $('#fechanac_rsdt').val(residente.fechanac_rsdt);
         $('#telefono_rsdt').val(residente.telefono_rsdt);
-
-        if (residente.rep_fam_id_rsdt == null)
-        {
-            $('#email').val(user.email);
-            $('#password').attr('type', 'password');
-            $('#password').val(user.password);
-            $('#rol').val(data.rol[0]);
-            $('#es_representante').prop('checked', true).trigger('input');
-        }
-        else
-        {
-            $('#rep_fam_id_rsdt').val(residente.rep_fam_id_rsdt).trigger('change');
-            $('#es_representante').prop('checked', false).trigger('input');
-        }
-
     }
 
     function show(id) {
@@ -389,8 +267,8 @@ $(document).ready(function () {
                 if (response.state) {
                     // Actualización exitosa
                     console.log("¡Actualización exitosa!");
-                    searchInput.val(response.data.residente.ci_rsdt);
-                    index(response.data.residente.ci_rsdt);
+                    searchInput.val(response.data.ci_rsdt);
+                    index(response.data.ci_rsdt);
                     modalMain.modal('hide');
                     setTimeout(function () {
                         searchInput.focus();
@@ -432,26 +310,8 @@ $(document).ready(function () {
     //#endregion
 
     //#region Interacción DOM
-    //#region Extras
-    //#region Select2 con Buscador
-    $("#rep_fam_id_rsdt").select2({
-        theme: "bootstrap-5",
-        selectionCssClass: "select2--small",
-        dropdownCssClass: "select2--small",
-        dropdownParent: $('#modalMain')
-    });
-    //#endregion
-    //#region Colapso
-    $("#es_representante").on('input', function () {
-        collapseWithCheck($(this), $("#campos_representante"), $("#rep_fam_id_rsdt"), $("#campos_usuario"), $("#email"));
-    });
-    //#endregion
-    //#endregion
-
     //#region Funciones de Carga Inicial
     index();
-    getResidentesOnSelect();
-    getRolesOnSelect();
     //#endregion
 
     //#region Busqueda

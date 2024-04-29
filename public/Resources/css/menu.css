@@ -948,3 +948,28 @@ table .btn i
     max-width: 75px;
 }
 /* End Region check collapse */
+
+/* Region Boton de Opciones */
+.btn-more-options {
+    background-color: transparent;
+    padding: 8px;
+    border-radius: 50%;
+    border: none;
+    transition: 400ms;
+}
+
+.btn-more-options i {
+    font-size: 18px;
+    color: var(--bs-dark);
+}
+
+.btn-more-options:hover
+{
+    background-color: var(--bs-body-bg);
+}
+
+.btn-more-options:active
+{
+    background-color: var(--bs-body-bg);
+}
+/* End Region Boton de Opcines */

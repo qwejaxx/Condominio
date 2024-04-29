@@ -20,7 +20,12 @@ class ResidenteController extends Controller
     public function getRepresentantes()
     {
         try {
-            $representantes = Residente::whereNull('rep_fam_id_rsdt')->get();
+            $representantes = Residente::whereNull('rep_fam_id_rsdt')
+                ->whereHas('usuario', function ($query) {
+                    $query->whereHas('roles', function ($roleQuery) {
+                        $roleQuery->whereIn('name', ['Administrador', 'Residente']);
+                    });
+                })->get();
 
             $response = [
                 'state' => true,
@@ -63,24 +68,28 @@ class ResidenteController extends Controller
     {
         $search = '%' . $request->search . '%';
         try {
-            $residentes = DB::table('residente as r')
-                ->select(
-                    'r.id_rsdt',
-                    'r.ci_rsdt',
-                    'r.nombre_rsdt',
-                    'r.apellidop_rsdt',
-                    'r.apellidom_rsdt',
-                    'r.fechanac_rsdt',
-                    'r.telefono_rsdt',
-                    'rep.nombre_rsdt as nombre_representante',
-                    'rep.apellidop_rsdt as apellido_representante',
-                    'estado'
-                )
-                ->leftJoin('residente as rep', 'r.rep_fam_id_rsdt', '=', 'rep.id_rsdt')
-                ->leftJoin('users as u', 'r.usuario_id_rsdt', '=', 'id')
-                ->whereRaw("CONCAT(r.nombre_rsdt, ' ', r.apellidop_rsdt, ' ', r.apellidom_rsdt) LIKE ?", [$search])
-                ->orWhere('r.ci_rsdt', 'LIKE', '%' . $search . '%')
+            $residentes = Residente::whereNotNull('usuario_id_rsdt')
+                ->whereNull('rep_fam_id_rsdt')
+                ->whereHas('usuario', function ($query) {
+                    $query->whereHas('roles', function ($roleQuery) {
+                        $roleQuery->whereIn('name', ['Administrador', 'Residente']);
+                    });
+                })
+                ->where(function ($mainQuery) use ($search) {
+                    $mainQuery->where('ci_rsdt', 'LIKE', $search)
+                        ->orWhereRaw("CONCAT(nombre_rsdt, ' ', apellidop_rsdt, ' ', apellidom_rsdt) LIKE ?", [$search]);
+                })
+                ->orWhere(function ($query) use ($search) {
+                    $query->whereNull('usuario_id_rsdt')
+                        ->whereNotNull('rep_fam_id_rsdt')
+                        ->where(function ($innerQuery) use ($search) {
+                            $innerQuery->where('ci_rsdt', 'LIKE', $search)
+                                ->orWhereRaw("CONCAT(nombre_rsdt, ' ', apellidop_rsdt, ' ', apellidom_rsdt) LIKE ?", [$search]);
+                        });
+                })
                 ->paginate($request->totalResultados);
+
+            $residentes->load('usuario.roles')->load('representante');
 
             $response = [
                 'state' => true,
@@ -103,8 +112,7 @@ class ResidenteController extends Controller
         try {
             DB::beginTransaction();
 
-            if ($request->has('es_representante'))
-            {
+            if ($request->has('es_representante')) {
                 $user = User::create([
                     'name' => $request->nombre_rsdt,
                     'email' => $request->email,
@@ -112,9 +120,7 @@ class ResidenteController extends Controller
                     'estado' => 1
                 ])->assignRole($request->rol);
                 $rep_fam = null;
-            }
-            else
-            {
+            } else {
                 $user = null;
                 $rep_fam = $request->rep_fam_id_rsdt;
             }

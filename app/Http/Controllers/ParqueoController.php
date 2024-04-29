@@ -3,23 +3,24 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Planificacion;
+use App\Models\Parqueo;
 
-class PlanificacionController extends Controller
+class ParqueoController extends Controller
 {
     public function showIndex()
     {
-        return view('Planificaciones.home');
+        return view('Parking.home');
     }
+
     public function index(Request $request)
     {
         try {
-            $planificaciones = Planificacion::paginate($request->totalResultados);
+            $parqueos = Parqueo::paginate($request->totalResultados);
 
             $response = [
                 'state' => true,
                 'message' => 'Consulta exitosa.',
-                'data' => $planificaciones
+                'data' => $parqueos
             ];
         } catch (\Exception $e) {
             $response = [
@@ -35,12 +36,12 @@ class PlanificacionController extends Controller
     public function store(Request $request)
     {
         try {
-            $planificacion = Planificacion::create($request->all());
+            $parqueo = Parqueo::create($request->all());
 
             $response = [
                 'state' => true,
-                'message' => 'Se ha creado una nueva planificación.',
-                'data' => $planificacion
+                'message' => 'Se ha creado un nuevo parqueo.',
+                'data' => $parqueo
             ];
         } catch (\Exception $e) {
             $response = [
@@ -56,12 +57,12 @@ class PlanificacionController extends Controller
     public function show($id)
     {
         try {
-            $planificacion = Planificacion::findOrFail($id);
+            $parqueo = Parqueo::findOrFail($id);
 
             $response = [
                 'state' => true,
                 'message' => 'Consulta exitosa.',
-                'data' => $planificacion
+                'data' => $parqueo
             ];
         } catch (\Exception $e) {
             $response = [
@@ -77,13 +78,13 @@ class PlanificacionController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $planificacion = Planificacion::findOrFail($id);
-            $planificacion->update($request->all());
+            $parqueo = Parqueo::findOrFail($id);
+            $parqueo->update($request->all());
 
             $response = [
                 'state' => true,
-                'message' => 'La planificación ha sido actualizada con éxito.',
-                'data' => $planificacion
+                'message' => 'El parqueo ha sido actualizado con éxito.',
+                'data' => $parqueo
             ];
         } catch (\Exception $e) {
             $response = [
@@ -99,11 +100,11 @@ class PlanificacionController extends Controller
     public function destroy($id)
     {
         try {
-            Planificacion::findOrFail($id)->delete();
+            Parqueo::findOrFail($id)->delete();
 
             $response = [
                 'state' => true,
-                'message' => 'La planificación ha sido eliminada correctamente.'
+                'message' => 'El parqueo ha sido eliminado correctamente.'
             ];
         } catch (\Exception $e) {
             $response = [
