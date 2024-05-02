@@ -21,18 +21,13 @@ class Departamento extends Model
         'parqueo_id_dpto',
     ];
 
-    public function residente()
-    {
-        return $this->belongsTo(Residente::class, 'residente_id_dpto');
-    }
-
     public function parqueo()
     {
         return $this->belongsTo(Parqueo::class, 'parqueo_id_dpto');
     }
 
-    public function adquisicion()
+    public function adquisiciones()
     {
-        return $this->hasOne(Adquisicion::class, 'departamento_id_reg');
+        return $this->hasMany(Adquisicion::class, 'departamento_id_reg', 'id_dpto');
     }
 }

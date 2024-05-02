@@ -16,9 +16,7 @@ return new class extends Migration
             $table->string('codigo_dpto', 20)->unique();
             $table->decimal('precio_dpto', 10, 2);
             $table->decimal('precioa_dpto', 10, 2);
-            $table->unsignedInteger('residente_id_dpto')->nullable();
             $table->unsignedInteger('parqueo_id_dpto')->nullable();
-            $table->foreign('residente_id_dpto')->references('id_rsdt')->on('residente')->onDelete('cascade')->onUpdate('cascade');
             $table->foreign('parqueo_id_dpto')->references('id_park')->on('parqueo')->onDelete('cascade')->onUpdate('cascade');
             $table->timestamps();
         });

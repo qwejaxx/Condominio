@@ -54,6 +54,12 @@
                     </a>
                 </li>
                 <li class="nav-link">
+                    <a class="{{ request()->is('Adquisiciones*') ? 'active' : '' }}" href="{{ route('Adquisiciones') }}">
+                        <i class="fa-solid fa-building-user icon"></i>
+                        <span class="text nav-text">Adquisiciones</span>
+                    </a>
+                </li>
+                <li class="nav-link">
                     <a class="{{ request()->is('Personal*') ? 'active' : '' }}" href="{{ route('Personal') }}">
                         <i class="fa-solid fa-users icon"></i>
                         <span class="text nav-text">Personal de Servicio</span>
@@ -147,6 +153,12 @@
                             <a class="{{ request()->is('Departamentos*') ? 'active' : '' }}" href="{{ route('Departamentos') }}">
                                 <i class="fa-solid fa-building icono me-2"></i>
                                 <span class="submenu-text-link">Departamentos</span>
+                            </a>
+                        </li>
+                        <li class="submenu-link">
+                            <a class="{{ request()->is('Adquisiciones*') ? 'active' : '' }}" href="{{ route('Adquisiciones') }}">
+                                <i class="fa-solid fa-building-user icono me-2"></i>
+                                <span class="submenu-text-link">Adquisiciones</span>
                             </a>
                         </li>
                         <li class="submenu-link">

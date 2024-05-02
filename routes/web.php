@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdquisicionController;
 use App\Http\Controllers\DepartamentoController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
@@ -94,3 +95,7 @@ Route::get('/Planificaciones/Asignaciones/{id}', [AsignacionPlanController::clas
 Route::get('/Planificaciones/Asignaciones', [AsignacionPlanController::class, 'showIndex'])->name('Asignaciones');
 Route::post('/Asignaciones/store', [AsignacionPlanController::class, 'storeParticipantes'])->name('storeParticipantes');
 Route::post('/Asignaciones/update', [AsignacionPlanController::class, 'updateAsignaciones'])->name('updateParticipantes');
+
+// Rutas para asignaciones
+Route::get('/Adquisiciones', [AdquisicionController::class, 'showIndex'])->name('Adquisiciones');
+Route::get('/Adquisiciones/index', [AdquisicionController::class, 'index'])->name('indexAdq');

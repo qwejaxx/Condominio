@@ -5,8 +5,7 @@ $(document).ready(function () {
     let mensajeModal = $('#modal-mensaje');
     let searchInput = $('#search');
     let btnCrud = $('#btnCrud');
-    /* let tableIndex = $('#tabla'); */
-    let cardsDep = $('#cardsDep');
+    let tableIndex = $('#tabla');
     let urlIndex = $('#url-index').val();
     let urlStore = $('#url-store').val();
     let urlShow = $('#url-show').val() + '/';
@@ -15,9 +14,10 @@ $(document).ready(function () {
     //#endregion
 
     //#region Funciones Extras
-    function getRepresentantesOnSelect() {
+
+    /* function getResidentesOnSelect() {
         let _token = $('meta[name="csrf-token"]').attr('content');
-        let select = $("#residente_id_dpto");
+        let select = $("#propietario_id_mas");
         let url = select.data('url');
 
         $.ajax(
@@ -46,49 +46,14 @@ $(document).ready(function () {
                     console.log("Error en la solicitud AJAX: " + error);
                 }
             });
-    }
-
-    function getParqueosOnSelect() {
-        let _token = $('meta[name="csrf-token"]').attr('content');
-        let select = $("#parqueo_id_dpto");
-        let url = select.data('url');
-
-        $.ajax(
-            {
-                url: url,
-                type: 'GET',
-                data: { _token: _token },
-                dataType: 'json',
-                success: function (response) {
-                    let parqueos = response.data;
-
-                    if (parqueos.length > 0) {
-                        select.empty();
-                        parqueos.forEach(parqueo => {
-                            select.append($("<option>",
-                                {
-                                    value: parqueo.id_park, text: parqueo.codigo_park
-                                }));
-                        });
-                    }
-                    else {
-                        console.log("No hay resultados");
-                    }
-                },
-                error: function (xhr, status, error) {
-                    console.log("Error en la solicitud AJAX: " + error);
-                }
-            });
-    }
+    } */
 
     function resetAllOnModal() {
         $('#rsdtForm')[0].reset(); // Reiniciar Formulario
         $('#rsdtForm').find(':input').prop('disabled', false);
         $('#botonesModal').removeClass('opacity-0');
-        $('#campos_propietario').addClass('show');
-        $('#campos_parqueo').removeClass('show');
-        $('#rep_fam_id_rsdt').val($('#rep_fam_id_rsdt option:first').val()).trigger('change');
-        tituloModal.text('Nuevo Residente');
+        $('#propietario_id_mas').val($('#propietario_id_mas option:first').val()).trigger('change');
+        tituloModal.text('Nueva Mascota');
         mensajeModal.html('');
         btnCrud.attr('name', 'store');
         btnCrud.text('Agregar');
@@ -97,21 +62,21 @@ $(document).ready(function () {
 
     //#region Funciones Prepare
     function prepareSelect(id) {
-        tituloModal.text('Detalles sobre el Departamento');
+        tituloModal.text('Detalles sobre la Mascota');
         $('#rsdtForm').find(':input').prop('disabled', true);
         $('#botonesModal').addClass('opacity-0');
         show(id);
     }
 
     function prepareEdit(id) {
-        tituloModal.text('Editar Departamento');
+        tituloModal.text('Editar Mascota');
         $('#rsdtForm').find(':input').prop('disabled', false);
         show(id);
     }
 
     function prepareDelete(id) {
-        tituloModal.text('Eliminar Departamento');
-        mensajeModal.html('El siguiente departamento se eliminará a continuación,<br>¿Está seguro?');
+        tituloModal.text('Eliminar Mascota');
+        mensajeModal.html('La siguiente Mascota se eliminará a continuación,<br>¿Está seguro?');
         $('#rsdtForm').find(':input:not(button)').prop('disabled', true);
         show(id);
     }
@@ -213,85 +178,55 @@ $(document).ready(function () {
             data: { _token: _token, search: search, totalResultados: totalResultados },
             dataType: 'json',
             success: function (response) {
-                cardsDep.empty();
+                tableIndex.empty();
                 if (response.data.data.length > 0) {
-                    console.log(response);
                     error.html('');
-                    html = ``;
-                    response.data.data.forEach(departamento => {
-                        let adquisicion = departamento.adquisiciones.length > 0 ? departamento.adquisiciones[0] : null;
-                        let residente = adquisicion ? adquisicion.residente : null;
-                        let nombreResidente = residente ? `Por: ${residente.nombre_rsdt} ${residente.apellidop_rsdt}` : 'Sin residente';
-                        let parqueo = departamento.parqueo;
-                        let estado = 'DISPONIBLE';
-                        let fechaFin = adquisicion ? new Date(adquisicion.fin_reg) : null;
-                        let fechaHoy = new Date();
-
-                        if (adquisicion && adquisicion.tipoadq_reg == 'Compra') {
-                            estado = 'COMPRADO';
-                        } else {
-                            if (fechaFin) {
-                                if (fechaHoy > fechaFin) {
-                                    estado = 'DISPONIBLE'
-                                    nombreResidente = 'Sin residente';
-                                }
-                                else {
-                                    estado = 'ALQUILADO'
-                                }
-                            }
-                            else {
-                                estado = 'DISPONIBLE'
-                            }
-                        }
-
+                    html = `
+                    <thead class="table-secondary fw-semibold">
+                        <tr>
+                            <th>ID</th>
+                            <th>DEPARTAMENTO</th>
+                            <th>RESIDENTE</th>
+                            <th>ADQUISICIÓN</th>
+                            <th>FECHA DE INICIO</th>
+                            <th>FECHA DE CONCLUSIÓN</th>
+                            <th>TOTAL PAGADO BS.</th>
+                            <th width="200">ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                `;
+                    response.data.data.forEach(adquisicion => {
+                        let codigoDepartamento = adquisicion.departamento.codigo_dpto;
+                        let nombreResidente = `${adquisicion.residente.nombre_rsdt} ${adquisicion.residente.apellidop_rsdt}`;
                         html += `
-                            <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <h6 class="m-0">DEPARTAMENTO | ${departamento.codigo_dpto}</h6>
-                                            <div class="dropend">
-                                                <button class="btn-more-options" type="button" data-bs-toggle="dropdown">
-                                                    <i class="fa-solid fa-ellipsis"></i>
-                                                </button>
-                                                <ul class="dropdown-menu p-0" style="width: auto; line-height: 1px;">
-                                                    <li>
-                                                        <button id="btnSelect" data-id="${departamento.id_dpto}" class="dropdown-item rounded-top px-2 py-2" href="#"><i
-                                                                class="fa-solid fa-clipboard me-2"></i>Detalles</button>
-                                                    </li>
-                                                    <li>
-                                                        <button id="btnEdit" data-id="${departamento.id_dpto}" class="dropdown-item px-2 py-2" href="#"><i
-                                                                class="fa-solid fa-pen-to-square me-2"></i>Editar</button>
-                                                    </li>
-                                                    <li>
-                                                        <button id="btnDelete" data-id="${departamento.id_dpto}" class="dropdown-item rounded-bottom px-2 py-2" href="#"><i
-                                                                class="fa-solid fa-trash me-2"></i>Eliminar</button>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h2 class="m-0">${estado}</h2>
-                                            <div>${nombreResidente}</div>
-                                            <hr>
-                                            <h6 class="m-0">PARQUEO ASIGNADO | ${parqueo ? (parqueo.codigo_park ?? 'NINGUNO') : 'NINGUNO'}</h6>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
+                        <tr>
+                            <td>${adquisicion.id_reg}</td>
+                            <td>${codigoDepartamento}</td>
+                            <td>${nombreResidente}</td>
+                            <td>${adquisicion.tipoadq_reg}</td>
+                            <td>${adquisicion.inicio_reg}</td>
+                            <td>${adquisicion.fin_reg ?? 'Sin fecha'}</td>
+                            <td>${adquisicion.pago_reg}</td>
+                            <td>
+                                <button id='btnSelect' data-id="${adquisicion.id_reg}" class='btn p-0 btn-sm btn-info text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-magnifying-glass-plus'></i></button>
+                                <button id='btnEdit' data-id="${adquisicion.id_reg}" class='btn p-0 btn-sm btn-secondary text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-pen-to-square'></i></button>
+                                <button id='btnDelete' data-id="${adquisicion.id_reg}" class='btn p-0 btn-sm btn-primary' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-trash'></i></button>
+                            </td>
+                        </tr>
+                    `;
                     });
-
-                    cardsDep.append(html);
+                    html += `</tbody>`;
+                    tableIndex.append(html);
 
                     // Llamar a la función para generar los botones de paginación
                     generatePaginationButtons(response.data.current_page, response.data.last_page, url, search);
                     seccionTotalResultados.removeClass('d-none');
                 } else {
-                    error.html('No se encontraron resultados.')
                     let paginationContainer = $('#pagination-container');
                     paginationContainer.empty();
                     seccionTotalResultados.addClass('d-none');
+                    error.html('No se encontraron resultados.')
                 }
             },
             error: function (xhr, status, error) {
@@ -302,7 +237,8 @@ $(document).ready(function () {
 
     function store() {
         let formData = $('#rsdtForm').serialize();
-
+        console.log(formData);
+        console.log(urlStore);
         $.ajax({
             url: urlStore,
             type: 'POST',
@@ -310,8 +246,8 @@ $(document).ready(function () {
             success: function (response) {
                 console.log(response);
                 if (response.state) {
-                    searchInput.val(response.data.codigo_dpto);
-                    index(response.data.codigo_dpto);
+                    searchInput.val(response.data.id_mas);
+                    index(response.data.id_mas);
                     modalMain.modal('hide');
                     setTimeout(function () {
                         searchInput.focus();
@@ -328,13 +264,11 @@ $(document).ready(function () {
     }
 
     function llenarFormulario(data) {
-        let departamento = data;
-        $('#id_dpto').val(departamento.id_dpto);
-        $('#codigo_dpto').val(departamento.codigo_dpto);
-        $('#precio_dpto').val(departamento.precio_dpto);
-        $('#precioa_dpto').val(departamento.precioa_dpto);
-        $('#residente_id_dpto').val(departamento.residente_id_dpto);
-        $('#parqueo_id_dpto').val(departamento.parqueo_id_dpto);
+        let mascota = data;
+        $('#id_mas').val(mascota.id_mas);
+        $('#nombre_mas').val(mascota.nombre_mas);
+        $('#tipo_mas').val(mascota.tipo_mas);
+        $('#propietario_id_mas').val(mascota.propietario_id_mas).trigger('change');
     }
 
     function show(id) {
@@ -370,8 +304,8 @@ $(document).ready(function () {
                 if (response.state) {
                     // Actualización exitosa
                     console.log("¡Actualización exitosa!");
-                    searchInput.val(response.data.codigo_dpto);
-                    index(response.data.codigo_dpto);
+                    searchInput.val(response.data.id_mas);
+                    index(response.data.id_mas);
                     modalMain.modal('hide');
                     setTimeout(function () {
                         searchInput.focus();
@@ -412,10 +346,20 @@ $(document).ready(function () {
     //#endregion
 
     //#region Interacción DOM
+    //#region Extras
+    //#region Select2 con Buscador
+    $("#propietario_id_mas").select2({
+        theme: "bootstrap-5",
+        selectionCssClass: "select2--small",
+        dropdownCssClass: "select2--small",
+        dropdownParent: $('#modalMain')
+    });
+    //#endregion
+    //#endregion
+
     //#region Funciones de Carga Inicial
     index();
-    getRepresentantesOnSelect();
-    getParqueosOnSelect();
+    getResidentesOnSelect();
     //#endregion
 
     //#region Busqueda
@@ -432,7 +376,7 @@ $(document).ready(function () {
     btnCrud.click(function (e) {
         e.preventDefault();
         let action = $(this).attr('name');
-        let id = $('#id_dpto').val();
+        let id = $('#id_mas').val();
         switch (action) {
             case "store":
                 {
@@ -455,21 +399,21 @@ $(document).ready(function () {
     //#endregion
 
     //#region Activacion de botones de CRUD
-    cardsDep.on('click', '#btnSelect', function () {
+    tableIndex.on('click', '#btnSelect', function () {
         let id = $(this).data('id');
         btnCrud.attr('name', 'show');
         btnCrud.text('Show');
         prepareSelect(id);
     });
 
-    cardsDep.on('click', '#btnEdit', function () {
+    tableIndex.on('click', '#btnEdit', function () {
         let id = $(this).data('id');
         btnCrud.attr('name', 'edit');
         btnCrud.text('Editar');
         prepareEdit(id);
     });
 
-    cardsDep.on('click', '#btnDelete', function () {
+    tableIndex.on('click', '#btnDelete', function () {
         let id = $(this).data('id');
         btnCrud.attr('name', 'delete');
         btnCrud.text('Eliminar');
