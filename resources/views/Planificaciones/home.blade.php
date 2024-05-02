@@ -8,9 +8,14 @@
     <script src="{{ asset('Resources/js/select2.min.js') }}"></script>
 @endsection
 @section('controllerLinks')
+    <input id="url-user" type="hidden" name="url-user" value="{{ route('indexRepRsdt') }}">
     <input id="url-index" type="hidden" name="url-index" value="{{ route('indexPlan') }}">
     <input id="url-store" type="hidden" name="url-store" value="{{ route('storePlan') }}">
     <input id="url-show" type="hidden" name="url-show" value="{{ route('Planificaciones') }}">
+    <input id="url-store-asignaciones" type="hidden" name="url-store-asignaciones"
+        value="{{ route('storeParticipantes') }}">
+    <input id="url-update-asignaciones" type="hidden" name="url-update-asignaciones"
+        value="{{ route('updateParticipantes') }}">
 @endsection
 @section('Titulo')
     <i class="fa-solid fa-list me-2"></i>Lista de Planificaciones
@@ -50,7 +55,7 @@
                                 </div>
                                 <div class="d-flex flex-column mb-1">
                                     <label for="descripcion_plan" class="label-form">Descripción:</label>
-                                    <textarea class="form-control form-control-sm" id="descripcion_plan" name="descripcion_plan" rows="3"></textarea>
+                                    <textarea class="area form-control form-control-sm" id="descripcion_plan" name="descripcion_plan" rows="3"></textarea>
                                 </div>
                                 <div class="d-flex flex-column mb-1">
                                     <label for="area_plan" class="label-form">Area:</label>
@@ -85,21 +90,84 @@
                     </div>
                 </div>
             </div>
-            <div class="modal fade" id="modalDetails" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-                aria-hidden="true">
+
+            <div class="modal fade" id="modalParticipantes" data-bs-backdrop="static" data-bs-keyboard="false"
+                tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-custom">
                         <div class="header">
-                            <div><i class="fa-solid fa-folder-open me-2"></i><span>Detalles del
-                                    Documento</span></div>
-                            <i class="fa-solid fa-xmark modal-close" data-bs-dismiss="modal"></i>
-                        </div>
-                        <div class="body">
-                            <div id="seccionSeguimiento" class="d-flex flex-column align-items-center">
-                                <!-- CARDS DE CONTENIDO AQUI -->
+                            <div>
+                                <span>Administrar Participantes</span>
+                            </div>
+                            <div>
+                                <i id="asignacionBtn" class="fas fa-user-plus modal-close" data-bs-toggle="modal"
+                                    data-bs-target="#modalAsignaciones"></i>
+                                <i class="fa-solid fa-xmark modal-close" data-bs-dismiss="modal"></i>
                             </div>
                         </div>
-                        <div class="footer"></div>
+                        <div class="body">
+                            <div class="text-center"></div>
+                            <div>
+                                <h4 id="titulo-asignacion" class="m-0 text-center text-uppercase"></h4>
+                                <hr class="my-2">
+                                <input type="text" class="form-control form-control-sm mt-2 mb-2" placeholder="Buscar"
+                                    name="searchParticipantes" id="searchParticipantes">
+                                <div id="noResultsMessage" class="mb-2 d-none">No se encontraron resultados.</div>
+                                <p class="mb-0">
+                                    Participantes
+                                    <span class="fw-bold"> · </span>
+                                    <span id="contadorParticipantes"></span>
+                                </p>
+                                <div id="participantesContainer"></div>
+                                <div class="mt-2 mb-2" id="etiquetaOculta" hidden>
+                                    Participantes a eliminar
+                                    <span class="fw-bold"> · </span>
+                                    <span id="contadorParticipantesEliminados"></span>
+                                </div>
+                                <div id="participantesEliminadosContainer"></div>
+                            </div>
+                        </div>
+                        <div class="footer">
+                            <div id="botonesModalParticipantes">
+                                <button type="button" class="btn btn-sm btn-outline-light"
+                                    data-bs-dismiss="modal">Cancelar</button>
+                                <button disabled name="btnUpdateAsignaciones" id="btnUpdateAsignaciones"
+                                    class="btn btn-sm btn-secondary ms-1">Guardar
+                                    Cambios</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="modalAsignaciones" data-bs-backdrop="static" data-bs-keyboard="false"
+                tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-custom">
+                        <div class="header">
+                            <div>Agregar Participantes</div>
+                            <div>
+                                <i class="fa-solid fa-xmark modal-close" data-bs-dismiss="modal"></i>
+                            </div>
+                        </div>
+                        <div class="body">
+                            <select id="SelParti"></select>
+                            <hr class="mt-3 mb-2">
+                            <p class="mb-0">
+                                Nuevos Participantes
+                                <span class="fw-bold"> · </span>
+                                <span id="contadorNuevosParticipantes"></span>
+                            </p>
+                            <div id="participantesSeleccionadosContainer"></div>
+                        </div>
+                        <div class="footer">
+                            <div id="botonesModalAsignaciones">
+                                <button id="btnRegresarAsig" type="button" class="btn btn-sm btn-outline-light"
+                                    data-bs-toggle="modal" data-bs-target="#modalParticipantes">Regresar</button>
+                                <button name="btnAsignar" id="btnAsignar" class="btn btn-sm btn-secondary ms-1"
+                                    disabled>Asignar</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -21,4 +21,9 @@ class Planificacion extends Model
         'inicio_plan',
         'fin_plan',
     ];
+
+    public function asignaciones()
+    {
+        return $this->hasMany(Asignacion_Plan::class, 'planificacion_id_asip');
+    }
 }

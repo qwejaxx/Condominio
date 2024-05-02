@@ -68,7 +68,13 @@
                 <li class="nav-link">
                     <a class="{{ request()->is('Visitas*') ? 'active' : '' }}" href="{{ route('Visitas') }}">
                         <i class="fa-solid fa-people-robbery icon"></i>
-                        <span class="text nav-text">Visitas</span>
+                        <span class="text nav-text">Visitantes</span>
+                    </a>
+                </li>
+                <li class="nav-link">
+                    <a class="{{ request()->is('Parking*') ? 'active' : '' }}" href="{{ route('Parking') }}">
+                        <i class="fa-solid fa-car icon"></i>
+                        <span class="text nav-text">Registro de Visitas</span>
                     </a>
                 </li>
                 <li class="nav-link">
@@ -158,7 +164,13 @@
                         <li class="submenu-link">
                             <a class="{{ request()->is('Visitas*') ? 'active' : '' }}" href="{{ route('Visitas') }}">
                                 <i class="fa-solid fa-people-robbery icono me-2"></i>
-                                <span class="submenu-text-link">Visitas</span>
+                                <span class="submenu-text-link">Visitantes</span>
+                            </a>
+                        </li>
+                        <li class="submenu-link">
+                            <a class="{{ request()->is('Visitas*') ? 'active' : '' }}" href="{{ route('Visitas') }}">
+                                <i class="fa-solid fa-people-robbery icono me-2"></i>
+                                <span class="submenu-text-link">Registro de Visitas</span>
                             </a>
                         </li>
                         <li class="submenu-link">
