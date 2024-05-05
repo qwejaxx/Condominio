@@ -99,3 +99,9 @@ Route::post('/Asignaciones/update', [AsignacionPlanController::class, 'updateAsi
 // Rutas para asignaciones
 Route::get('/Adquisiciones', [AdquisicionController::class, 'showIndex'])->name('Adquisiciones');
 Route::get('/Adquisiciones/index', [AdquisicionController::class, 'index'])->name('indexAdq');
+Route::get('/Adquisiciones/getDptos', [AdquisicionController::class, 'getDepartamentos'])->name('getDptos');
+Route::get('/Adquisiciones/getRep', [AdquisicionController::class, 'getRepresentantes'])->name('getRep');
+Route::post('/Adquisiciones/store', [AdquisicionController::class, 'store'])->name('storeAdq');
+Route::get('/Adquisiciones/{id}', [AdquisicionController::class, 'show'])->name('showAdq');
+Route::put('/Adquisiciones/{id}', [AdquisicionController::class, 'update'])->name('updateAdq');
+Route::delete('/Adquisiciones/{id}', [AdquisicionController::class, 'destroy'])->name('destroyAdq');

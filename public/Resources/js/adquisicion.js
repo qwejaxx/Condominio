@@ -11,18 +11,25 @@ $(document).ready(function () {
     let urlShow = $('#url-show').val() + '/';
     let urlUpdate = urlShow;
     let urlDelete = urlShow;
+    let urlGetRep = $('#url-get-rep').val();
+    let urlGetDptosDisp = $('#url-get-dptos-disp').val();
+    let urlGetDptos = $('#url-dpto').val() + '/index';
+    let urlDepartamento = $('#url-dpto').val() + '/';
     //#endregion
 
     //#region Funciones Extras
+    function formatearFecha(fecha) {
+        fecha.setHours(fecha.getHours() - 4);
+        return fecha.toISOString().slice(0, 10);
+    }
 
-    /* function getResidentesOnSelect() {
+    function getRepresentantesOnSelect() {
         let _token = $('meta[name="csrf-token"]').attr('content');
-        let select = $("#propietario_id_mas");
-        let url = select.data('url');
+        let select = $("#residente_id_reg");
 
         $.ajax(
             {
-                url: url,
+                url: urlGetRep,
                 type: 'GET',
                 data: { _token: _token },
                 dataType: 'json',
@@ -46,37 +53,167 @@ $(document).ready(function () {
                     console.log("Error en la solicitud AJAX: " + error);
                 }
             });
-    } */
+    }
+
+    function getDptosOnSelect() {
+        let _token = $('meta[name="csrf-token"]').attr('content');
+        let select = $("#departamento_id_reg");
+        let url = urlGetDptosDisp;
+        $.ajax(
+            {
+                url: url,
+                type: 'GET',
+                data: { _token: _token },
+                dataType: 'json',
+                success: function (response) {
+                    let departamentos = response.data;
+
+                    if (departamentos.length > 0) {
+                        select.empty();
+                        departamentos.forEach(departamento => {
+                            select.append($("<option>",
+                                {
+                                    value: departamento.id_dpto, text: departamento.codigo_dpto
+                                }));
+                        });
+                        select.children('option').first().prop('selected', true).trigger('change');
+                    }
+                    else {
+                        console.log("No hay resultados");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log("Error en la solicitud AJAX: " + error);
+                }
+            });
+    }
+
+    function getDptosDisponiblesOnSelect() {
+        let _token = $('meta[name="csrf-token"]').attr('content');
+        let select = $("#departamento_id_reg");
+        let url = urlGetDptosDisp;
+        $.ajax(
+            {
+                url: url,
+                type: 'GET',
+                data: { _token: _token },
+                dataType: 'json',
+                success: function (response) {
+                    let departamentos = response.data;
+                    let countDisp = 0;
+
+                    if (departamentos.length > 0) {
+                        select.empty();
+                        departamentos.forEach(departamento => {
+                            if (departamento.estado_dpto == 'DISPONIBLE') {
+                                select.append($("<option>",
+                                    {
+                                        value: departamento.id_dpto, text: departamento.codigo_dpto
+                                    }));
+                                countDisp++;
+                            }
+                        });
+                        if (countDisp > 0) {
+                            select.children('option').first().prop('selected', true).trigger('change');
+                        }
+                        else {
+                            $('#seccionAdquisicion').addClass('d-none');
+                            mensajeModal.html('No hay departamentos disponibles para registrar una nueva adquisición.');
+                            $('#botonesModal').addClass('opacity-0');
+                        }
+                    }
+                    else {
+                        console.log('No hay resultados');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log("Error en la solicitud AJAX: " + error);
+                }
+            });
+    }
+
+    function getPagoTotalDpto(id, tipoAdq) {
+        let _token = $('meta[name="csrf-token"]').attr('content');
+        let inputPago = $('#pago_reg');
+        $.ajax({
+            url: urlDepartamento + id,
+            type: 'GET',
+            data: { _token: _token },
+            dataType: 'json',
+            success: function (response) {
+                if (response.state) {
+                    let seccionFecha = $('#seccion_fecha_fin');
+                    let labelPago = $('#labelPago');
+                    if (tipoAdq == 'Compra') {
+                        seccionFecha.collapse('hide');
+                        labelPago.text('Pago por compra Bs.:');
+                        inputPago.val(response.data.precio_dpto);
+                    } else {
+                        let fechaInicio = new Date($('#inicio_reg').val() + 'T00:00:00Z');
+                        let fechaFin = new Date($('#fin_reg').val());
+                        if (isNaN(fechaFin.getTime())) {
+                            fechaFin = new Date(fechaInicio);
+                            fechaFin.setMonth(fechaInicio.getMonth() + 1);
+                            $('#fin_reg').val(fechaFin.toISOString().slice(0, 10));
+                        }
+                        let diferenciaMilisegundos = fechaFin - fechaInicio;
+                        let diferenciaDias = Math.ceil(diferenciaMilisegundos / (1000 * 60 * 60 * 24));
+
+                        let pago = response.data.precioa_dpto;
+                        labelPago.text(`Pago de alquiler: ${diferenciaDias} días x ${pago} Bs.`);
+                        inputPago.val(pago * diferenciaDias);
+
+                        seccionFecha.collapse('show');
+                    }
+                } else {
+                    console.error(response.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    }
 
     function resetAllOnModal() {
         $('#rsdtForm')[0].reset(); // Reiniciar Formulario
-        $('#rsdtForm').find(':input').prop('disabled', false);
+        $('#rsdtForm').find(':input').not('#pago_reg').prop('disabled', false);
         $('#botonesModal').removeClass('opacity-0');
-        $('#propietario_id_mas').val($('#propietario_id_mas option:first').val()).trigger('change');
-        tituloModal.text('Nueva Mascota');
+        $('#tipoadq_reg').val('Compra');
+        $('#labelPago').text('Pago por compra Bs.:');
+        $('#seccion_fecha_fin').removeClass('show');
+        tituloModal.text('Nueva Adquisición');
         mensajeModal.html('');
         btnCrud.attr('name', 'store');
-        btnCrud.text('Agregar');
+        btnCrud.text('Registrar');
+        getDptosOnSelect();
+        $('#inicio_reg').val(formatearFecha(new Date()));
+        let fechaFin = new Date();
+        fechaFin.setMonth(fechaFin.getMonth() + 1);
+        $('#fin_reg').val(formatearFecha(fechaFin));
+        $('#seccionAdquisicion').removeClass('d-none');
     }
     //#endregion
 
     //#region Funciones Prepare
     function prepareSelect(id) {
-        tituloModal.text('Detalles sobre la Mascota');
+        tituloModal.text('Detalles sobre la Adquisición');
         $('#rsdtForm').find(':input').prop('disabled', true);
         $('#botonesModal').addClass('opacity-0');
         show(id);
     }
 
     function prepareEdit(id) {
-        tituloModal.text('Editar Mascota');
+        tituloModal.text('Editar Adquisición');
         $('#rsdtForm').find(':input').prop('disabled', false);
+        $('#pago_reg').prop('disabled', true);
+        $('#departamento_id_reg').prop('disabled', true);
         show(id);
     }
 
     function prepareDelete(id) {
-        tituloModal.text('Eliminar Mascota');
-        mensajeModal.html('La siguiente Mascota se eliminará a continuación,<br>¿Está seguro?');
+        tituloModal.text('Eliminar Adquisición');
+        mensajeModal.html('La siguiente adquisición se eliminará a continuación,<br>¿Está seguro?');
         $('#rsdtForm').find(':input:not(button)').prop('disabled', true);
         show(id);
     }
@@ -236,9 +373,9 @@ $(document).ready(function () {
     }
 
     function store() {
+        $('#pago_reg').prop('disabled', false);
         let formData = $('#rsdtForm').serialize();
         console.log(formData);
-        console.log(urlStore);
         $.ajax({
             url: urlStore,
             type: 'POST',
@@ -246,8 +383,8 @@ $(document).ready(function () {
             success: function (response) {
                 console.log(response);
                 if (response.state) {
-                    searchInput.val(response.data.id_mas);
-                    index(response.data.id_mas);
+                    searchInput.val(response.data.id_reg);
+                    index(response.data.id_reg);
                     modalMain.modal('hide');
                     setTimeout(function () {
                         searchInput.focus();
@@ -259,20 +396,39 @@ $(document).ready(function () {
             },
             error: function (xhr, status, error) {
                 console.error(xhr.responseText);
+            },
+            complete: function () {
+                $('#pago_reg').prop('disabled', true);
             }
         });
     }
 
     function llenarFormulario(data) {
-        let mascota = data;
-        $('#id_mas').val(mascota.id_mas);
-        $('#nombre_mas').val(mascota.nombre_mas);
-        $('#tipo_mas').val(mascota.tipo_mas);
-        $('#propietario_id_mas').val(mascota.propietario_id_mas).trigger('change');
+        let adquisicion = data;
+        $('#id_reg').val(adquisicion.id_reg);
+        $('#departamento_id_reg').val(adquisicion.departamento_id_reg);
+        $('#residente_id_reg').val(adquisicion.residente_id_reg);
+        $('#tipoadq_reg').val(adquisicion.tipoadq_reg);
+        if (adquisicion.tipoadq_reg == 'Alquiler') {
+            $('#seccion_fecha_fin').addClass('show');
+            let inicio = new Date($('#inicio_reg').val());
+            let fin = new Date($('#fin_reg').val());
+            let diferenciaMilisegundos = fin - inicio;
+            let diferenciaDias = Math.ceil(diferenciaMilisegundos / (1000 * 60 * 60 * 24));
+            $('#labelPago').text(`Pago de alquiler: ${diferenciaDias} días x ${adquisicion.pago_reg / diferenciaDias} Bs.`);
+        }
+        else
+        {
+            $('#labelPago').text('Pago por compra Bs.:');
+        }
+        $('#inicio_reg').val(adquisicion.inicio_reg);
+        $('#fin_reg').val(adquisicion.fin_reg);
+        $('#pago_reg').val(adquisicion.pago_reg);
     }
 
     function show(id) {
         let _token = $('meta[name="csrf-token"]').attr('content');
+
         $.ajax({
             url: urlShow + id,
             type: 'GET',
@@ -293,6 +449,7 @@ $(document).ready(function () {
     }
 
     function update(id) {
+        $('#pago_reg').prop('disabled', false);
         let formData = $('#rsdtForm').serialize();
 
         $.ajax({
@@ -304,8 +461,8 @@ $(document).ready(function () {
                 if (response.state) {
                     // Actualización exitosa
                     console.log("¡Actualización exitosa!");
-                    searchInput.val(response.data.id_mas);
-                    index(response.data.id_mas);
+                    searchInput.val(response.data.id_reg);
+                    index(response.data.id_reg);
                     modalMain.modal('hide');
                     setTimeout(function () {
                         searchInput.focus();
@@ -317,6 +474,9 @@ $(document).ready(function () {
             error: function (xhr, status, error) {
                 // Si hay un error en la solicitud AJAX, muestra el mensaje de error en la consola
                 console.error(xhr.responseText);
+            },
+            complete: function () {
+                $('#pago_reg').prop('disabled', true);
             }
         });
     }
@@ -359,8 +519,12 @@ $(document).ready(function () {
 
     //#region Funciones de Carga Inicial
     index();
-    getResidentesOnSelect();
-    //#endregion
+    getDptosOnSelect();
+    getRepresentantesOnSelect();
+    $('#inicio_reg').val(formatearFecha(new Date()));
+    let fechaFin = new Date();
+    fechaFin.setMonth(fechaFin.getMonth() + 1);
+    $('#fin_reg').val(formatearFecha(fechaFin));
 
     //#region Busqueda
     searchInput.on('input', function () {
@@ -372,11 +536,15 @@ $(document).ready(function () {
     });
     //#endregion
 
-    //#region Store
+    //#region CRUD
+    $('#btnAgregar').on('click', function () {
+        getDptosDisponiblesOnSelect();
+    });
+
     btnCrud.click(function (e) {
         e.preventDefault();
         let action = $(this).attr('name');
-        let id = $('#id_mas').val();
+        let id = $('#id_reg').val();
         switch (action) {
             case "store":
                 {
@@ -421,9 +589,28 @@ $(document).ready(function () {
     });
     //#endregion
 
-    //#region Configuracion en Modales
-    $("#modalMain").on("shown.bs.modal", function () {
+    //#region Select Departamento y Adq On Change
+    $('#departamento_id_reg').on('change', function () {
+        getPagoTotalDpto($(this).val(), $('#tipoadq_reg').val());
+    });
 
+    $('#tipoadq_reg').on('change', function () {
+        let tipoAdquisicion = $(this).val();
+        let idDpto = $('#departamento_id_reg').val();
+        getPagoTotalDpto(idDpto, tipoAdquisicion);
+    });
+
+    $('#fin_reg').on('input', function () {
+        getPagoTotalDpto($('#departamento_id_reg').val(), $('#tipoadq_reg').val());
+    });
+
+    $('#inicio_reg').on('input', function () {
+        getPagoTotalDpto($('#departamento_id_reg').val(), $('#tipoadq_reg').val());
+    });
+    //#endregion
+
+    //#region Configuracion en Modales
+    modalMain.on("show.bs.modal", function () {
     });
 
     modalMain.on('hidden.bs.modal', function () {

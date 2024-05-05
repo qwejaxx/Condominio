@@ -15,39 +15,6 @@ $(document).ready(function () {
     //#endregion
 
     //#region Funciones Extras
-    function getRepresentantesOnSelect() {
-        let _token = $('meta[name="csrf-token"]').attr('content');
-        let select = $("#residente_id_dpto");
-        let url = select.data('url');
-
-        $.ajax(
-            {
-                url: url,
-                type: 'GET',
-                data: { _token: _token },
-                dataType: 'json',
-                success: function (response) {
-                    let representantes = response.data;
-
-                    if (representantes.length > 0) {
-                        select.empty();
-                        representantes.forEach(representante => {
-                            select.append($("<option>",
-                                {
-                                    value: representante.id_rsdt, text: representante.nombre_rsdt + ' ' + representante.apellidop_rsdt
-                                }));
-                        });
-                    }
-                    else {
-                        console.log("No hay resultados");
-                    }
-                },
-                error: function (xhr, status, error) {
-                    console.log("Error en la solicitud AJAX: " + error);
-                }
-            });
-    }
-
     function getParqueosOnSelect() {
         let _token = $('meta[name="csrf-token"]').attr('content');
         let select = $("#parqueo_id_dpto");
@@ -92,6 +59,7 @@ $(document).ready(function () {
         mensajeModal.html('');
         btnCrud.attr('name', 'store');
         btnCrud.text('Agregar');
+        $('seccionAdquisiciones').addClass('d-none')
     }
     //#endregion
 
@@ -329,12 +297,32 @@ $(document).ready(function () {
 
     function llenarFormulario(data) {
         let departamento = data;
+        console.log(departamento);
         $('#id_dpto').val(departamento.id_dpto);
         $('#codigo_dpto').val(departamento.codigo_dpto);
         $('#precio_dpto').val(departamento.precio_dpto);
         $('#precioa_dpto').val(departamento.precioa_dpto);
-        $('#residente_id_dpto').val(departamento.residente_id_dpto);
         $('#parqueo_id_dpto').val(departamento.parqueo_id_dpto);
+        if (btnCrud.attr('name') == 'show') {
+            let adquisiciones = departamento.adquisiciones;
+            if (adquisiciones.length > 0) {
+                let adquisicion = adquisiciones[0];
+                let residente = adquisicion.residente;
+                $('#ci_adq').text(residente.ci_rsdt);
+                $('#rsdt_adq').text(`${residente.nombre_rsdt} ${residente.apellidop_rsdt}`);
+                $('#inicio_adq').text(adquisicion.inicio_reg);
+                $('#fin_adq').text(adquisicion.fin_reg ?? 'Sin fecha');
+                $('#tipo_adq').text(adquisicion.tipoadq_reg);
+                $('#pago_adq').text(adquisicion.pago_reg);
+                $('#seccionAdquisiciones').removeClass('d-none');
+            }
+            else {
+                $('#seccionAdquisiciones').addClass('d-none');
+            }
+        }
+        else {
+            $('#seccionAdquisiciones').addClass('d-none');
+        }
     }
 
     function show(id) {
@@ -414,8 +402,6 @@ $(document).ready(function () {
     //#region Interacción DOM
     //#region Funciones de Carga Inicial
     index();
-    getRepresentantesOnSelect();
-    getParqueosOnSelect();
     //#endregion
 
     //#region Busqueda
@@ -478,8 +464,8 @@ $(document).ready(function () {
     //#endregion
 
     //#region Configuracion en Modales
-    $("#modalMain").on("shown.bs.modal", function () {
-
+    $("#modalMain").on("show.bs.modal", function () {
+        getParqueosOnSelect();
     });
 
     modalMain.on('hidden.bs.modal', function () {

@@ -59,34 +59,34 @@
                                         name="precioa_dpto">
                                 </div>
 
-                                <!-- Check para confirmar si el departamento tiene propietario -->
-                                {{-- <hr>
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <label class="form-check-label" for="es_representante" style="line-height: 1;">Asignar Propietario</label>
-                                    <div
-                                        class="form-check p-0 form-switch mb-0 d-flex justify-content-end align-items-center">
-                                        <input id="es_representante" name="es_representante" class="form-check-input mt-0"
-                                            type="checkbox" role="switch">
-                                    </div>
-                                </div> --}}
-
-                                <!-- Campo adicional si se quiere asignar un propietario -->
-                                <div id="campos_propietario" class="{{-- collapse show --}}">
-                                    <div class="d-flex flex-column mb-1">
-                                        <label for="residente_id_dpto" class="label-form">Propietario:</label>
-                                        <select class="form-select" data-url="{{ route('indexRepDpto') }}"
-                                            id="residente_id_dpto" name="residente_id_dpto">
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <!-- Campo adicional si se quiere asignar un parqueo -->
-                                <div id="campos_parqueo" class="{{-- collapse show --}}">
+                                <div id="campos_parqueo">
                                     <div class="d-flex flex-column mb-1">
                                         <label for="parqueo_id_dpto" class="label-form">Parqueo:</label>
                                         <select class="form-select" data-url="{{ route('indexParkDpto') }}"
                                             id="parqueo_id_dpto" name="parqueo_id_dpto">
                                         </select>
+                                    </div>
+                                </div>
+                                <div id="seccionAdquisiciones" class="d-none">
+                                    <div class="card mt-3">
+                                        <div class="card-header">
+                                            <h6 class="m-0 text-center">ADQUISICIÓN</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="fw-semibold">CI: <span class="fw-normal" id="ci_adq"></span>
+                                            </div>
+                                            <div class="fw-semibold">Residente: <span class="fw-normal"
+                                                    id="rsdt_adq"></span></div>
+                                            <div class="fw-semibold">En fecha: <span class="fw-normal"
+                                                    id="inicio_adq"></span></div>
+                                            <div id="seccionFecha" class="fw-semibold">Hasta: <span class="fw-normal"
+                                                    id="fin_adq"></span>
+                                            </div>
+                                            <div class="fw-semibold">Tipo de adquisición: <span class="fw-normal"
+                                                id="tipo_adq"></span></div>
+                                            <div class="fw-semibold">Pago realizado: <span class="fw-normal"
+                                                    id="pago_adq"></span></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\Departamento;
 use App\Models\Residente;
 use App\Models\Parqueo;
-use Illuminate\Support\Facades\DB;
 use DateTime;
 
 class DepartamentoController extends Controller
@@ -68,8 +67,7 @@ class DepartamentoController extends Controller
         try {
             $search = '%' . $request->search . '%';
 
-            //Consulta para obtener todos los departamentos con su parqueo y el ultimo registro de sus adquisiciones
-            /* $departamentos = Departamento::with(['parqueo', 'adquisiciones' => function ($query) {
+            $departamentos = Departamento::with(['parqueo', 'adquisiciones' => function ($query) {
                 $query->select('id_reg', 'departamento_id_reg', 'residente_id_reg', 'tipoadq_reg', 'inicio_reg', 'fin_reg', 'pago_reg')
                     ->with('residente')
                     ->orderByDesc('id_reg')
@@ -77,43 +75,33 @@ class DepartamentoController extends Controller
             }])
                 ->where('id_dpto', 'LIKE', $search)
                 ->orWhere('codigo_dpto', 'LIKE', $search)
-                ->paginate($request->totalResultados); */
-
-                $departamentos = Departamento::with(['parqueo', 'adquisiciones' => function ($query) {
-                    $query->select('id_reg', 'departamento_id_reg', 'residente_id_reg', 'tipoadq_reg', 'inicio_reg', 'fin_reg', 'pago_reg')
-                        ->with('residente')
-                        ->orderByDesc('id_reg')
-                        ->limit(1);
-                }])
-                ->where('id_dpto', 'LIKE', $search)
-                ->orWhere('codigo_dpto', 'LIKE', $search)
                 ->paginate($request->totalResultados);
 
-                $departamentos->getCollection()->transform(function ($departamento) {
-                    $estado = 'DISPONIBLE';
+            $departamentos->getCollection()->transform(function ($departamento) {
+                $estado = 'DISPONIBLE';
 
-                    if ($departamento->adquisiciones->isNotEmpty()) {
-                        $adquisicion = $departamento->adquisiciones->first();
-                        if ($adquisicion->tipoadq_reg == 'Compra') {
-                            $estado = 'COMPRADO';
+                if ($departamento->adquisiciones->isNotEmpty()) {
+                    $adquisicion = $departamento->adquisiciones->first();
+                    if ($adquisicion->tipoadq_reg == 'Compra') {
+                        $estado = 'COMPRADO';
+                    } else {
+                        $fechaFin = new DateTime($adquisicion->fin_reg);
+                        $fechaHoy = new DateTime();
+
+                        if ($fechaHoy > $fechaFin) {
+                            $estado = 'DISPONIBLE';
                         } else {
-                            $fechaFin = new DateTime($adquisicion->fin_reg);
-                            $fechaHoy = new DateTime();
-
-                            if ($fechaHoy > $fechaFin) {
-                                $estado = 'DISPONIBLE';
-                            } else {
-                                $estado = 'ALQUILADO';
-                            }
+                            $estado = 'ALQUILADO';
                         }
                     }
+                }
 
-                    $departamento->estado_dpto = $estado;
+                $departamento->estado_dpto = $estado;
 
-                    return $departamento;
-                });
+                return $departamento;
+            });
 
-                $paginatedResults = $departamentos;
+            $paginatedResults = $departamentos;
 
             $response = [
                 'state' => true,
@@ -155,7 +143,12 @@ class DepartamentoController extends Controller
     public function show($id)
     {
         try {
-            $departamento = Departamento::findOrFail($id);
+            $departamento = Departamento::with(['parqueo', 'adquisiciones' => function ($query) {
+                $query->select('id_reg', 'departamento_id_reg', 'residente_id_reg', 'tipoadq_reg', 'inicio_reg', 'fin_reg', 'pago_reg')
+                    ->with('residente')
+                    ->orderByDesc('id_reg')
+                    ->limit(1);
+            }])->findOrFail($id);
 
             $response = [
                 'state' => true,
