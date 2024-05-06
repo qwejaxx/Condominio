@@ -15,8 +15,6 @@ return new class extends Migration
             $table->increments('id_asip');
             $table->unsignedInteger('planificacion_id_asip');
             $table->unsignedInteger('participante_id_asip');
-            $table->decimal('cuota_asip', 10, 2)->nullable();
-            $table->boolean('pagado_asip')->nullable();
             $table->foreign('planificacion_id_asip')->references('id_plan')->on('planificacion')->onDelete('cascade')->onUpdate('cascade');
             $table->foreign('participante_id_asip')->references('id_rsdt')->on('residente')->onDelete('cascade')->onUpdate('cascade');
             $table->timestamps();

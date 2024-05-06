@@ -61,7 +61,7 @@
                                 </div>
                                 <div class="d-flex flex-column mb-1">
                                     <label for="propietario_id_mas" class="label-form">Propietario:</label>
-                                    <select class="form-select" data-url="{{ route('indexRepMas') }}"
+                                    <select class="form-select" data-url="{{ route('indexRepDpto') }}"
                                         id="propietario_id_mas" name="propietario_id_mas">
                                     </select>
                                 </div>

@@ -76,10 +76,6 @@ class AdquisicionController extends Controller
             return $departamento;
         });
 
-        /* $departamentos = $departamentos->filter(function ($departamento) {
-            return $departamento->estado_dpto === 'DISPONIBLE';
-        })->values(); */
-
         $response = [
             'state' => true,
             'message' => 'Consulta exitosa.',
@@ -130,12 +126,12 @@ class AdquisicionController extends Controller
                 $data['fin_reg'] = null;
             }
 
-            $adquisición = Adquisicion::create($data);
+            $adquisicion = Adquisicion::create($data);
 
             $response = [
                 'state' => true,
                 'message' => 'Se ha registrado una nueva adquisición.',
-                'data' => $adquisición
+                'data' => $adquisicion
             ];
         } catch (\Exception $e) {
             $response = [

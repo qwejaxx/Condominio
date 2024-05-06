@@ -15,9 +15,7 @@ class Asignacion_plan extends Model
 
     protected $fillable = [
         'planificacion_id_asip',
-        'participante_id_asip',
-        'cuota_asip',
-        'pagado_asip',
+        'participante_id_asip'
     ];
 
     public function planificacion()

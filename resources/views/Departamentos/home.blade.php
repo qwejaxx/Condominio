@@ -49,12 +49,12 @@
                                         name="codigo_dpto">
                                 </div>
                                 <div class="d-flex flex-column mb-1">
-                                    <label for="precio_dpto" class="label-form">Precio de Compra:</label>
+                                    <label for="precio_dpto" class="label-form">Precio de Compra Bs.:</label>
                                     <input type="text" class="form-control form-control-sm" id="precio_dpto"
                                         name="precio_dpto">
                                 </div>
                                 <div class="d-flex flex-column mb-1">
-                                    <label for="precioa_dpto" class="label-form">Precio de Alquiler Por Día:</label>
+                                    <label for="precioa_dpto" class="label-form">Precio de Alquiler Por Día Bs.:</label>
                                     <input type="text" class="form-control form-control-sm" id="precioa_dpto"
                                         name="precioa_dpto">
                                 </div>
@@ -62,7 +62,7 @@
                                 <div id="campos_parqueo">
                                     <div class="d-flex flex-column mb-1">
                                         <label for="parqueo_id_dpto" class="label-form">Parqueo:</label>
-                                        <select class="form-select" data-url="{{ route('indexParkDpto') }}"
+                                        <select class="form-select form-select-sm" data-url="{{ route('indexParkDpto') }}"
                                             id="parqueo_id_dpto" name="parqueo_id_dpto">
                                         </select>
                                     </div>

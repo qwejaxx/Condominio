@@ -31,40 +31,12 @@ $(document).ready(function () {
     //#endregion
 
     //#region Funciones Extras
-    function MostrarNotificacion(clase, texto, segundos)
-    {
-        let aux = $("#notificacion");
-        if (aux.html() != undefined)
-        {
-            aux.remove();
-        }
-        let html = `
-        <div id="notificacion" class="alerta show fade alert p-0 alert-dismissible alert-${clase}">
-            <div class="d-flex justify-content-between align-items-center py-1 px-2 gap-2">
-                <div class="text-justify" style="font-size: 12.6px">Notificación.</div>
-                <button class="btn btn-sm p-0 text-${clase}" id="btnCerrarAlerta" type="button" data-bs-dismiss="alert" data-bs-target="#notificacion">
-                    <i class="fa-solid fa-xmark text-dark"></i>
-                </button>
-            </div>
-            <hr class="m-0">
-            <div class="py-1 px-2">
-                <div class="text-justify alerta-text">` + texto + `</div>
-            </div>
-        </div>`;
-        $("body").append(html);
-        let alerta = $("#notificacion");
-        setTimeout(function()
-        {
-            alerta.alert("close");
-        }, segundos * 1000);
-    }
-
     function resetAllOnModal() {
         $('#rsdtForm')[0].reset(); // Reiniciar Formulario
         $('#rsdtForm').find(':input').prop('disabled', false);
         $('#botonesModal').removeClass('opacity-0');
         $('#propietario_id_mas').val($('#propietario_id_mas option:first').val()).trigger('change');
-        tituloModal.text('Nueva Actividad');
+        tituloModal.text('Nueva Planificación');
         mensajeModal.html('');
         btnCrud.attr('name', 'store');
         btnCrud.text('Agregar');
@@ -103,7 +75,7 @@ $(document).ready(function () {
                 contenedorEliminados.append(nuevoDiv);
             }
             else {
-                MostrarNotificacion('danger', 'El participante ya se encuentra en la lista de eliminados.', 5);
+                console.log('El participante ya se encuentra en la lista de eliminados.');
             }
         }
         else {
@@ -114,7 +86,7 @@ $(document).ready(function () {
                 contenedorParticipantes.append(nuevoDiv);
             }
             else {
-                MostrarNotificacion('danger', 'El participante ya se encuentra en la actividad.', 5);
+                console.log('El participante ya se encuentra en la actividad.');
             }
         }
         actualizarContadores();
@@ -151,8 +123,6 @@ $(document).ready(function () {
         let idParticipante = participante.id_rsdt;
         let nombreParticipante = participante.apellidop_rsdt ? participante.nombre_rsdt + ' ' + participante.apellidop_rsdt : participante.nombre_rsdt;
         let rolParticipante = participante.usuario.roles[0].name;
-        let pagadoParticipante = participante.totalPagado;
-        let restanteParticipante = participante.restante;
         let icono = '<i class="fas fa-times"></i>';
         if (accion == 'Agregar') {
             icono = '<i class="fas fa-plus"></i>';
@@ -164,14 +134,10 @@ $(document).ready(function () {
                     <div class="card-body border-secondary px-2 py-1">
                         <div class="d-flex align-items-center bg-gray">
                             <div class="user-iconAP" style="background-image: url(Resources/imgs/perfil.jpg)"></div>
-                            <div class="ms-2 w-100">
+                            <div class="ms-2">
                                 <div class="id_participante" hidden>${idParticipante}</div>
-                                <div class="nombre_participante fw-medium">${nombreParticipante}</div>
-                                <div class="fw-normal rol_participante" style="font-size: 10px; line-height: 10px;">${rolParticipante}</div>
-                                <div class="d-flex justify-content-between ${pagadoParticipante ? '' : 'd-none'}" style="font-size: 12px;">
-                                    <div class="fw-medium">Pagado Bs.: <span class="pagado_participante ">${pagadoParticipante}</span></div>
-                                    <div class="fw-medium">Debe Bs.: <span class="restante_participante ">${restanteParticipante}</span></div>
-                                </div>
+                                <div class="nombre_participante fw-semibold">${nombreParticipante}</div>
+                                <div class="rol_participante" style="font-size: 11px;">${rolParticipante}</div>
                             </div>
                         </div>
                     </div>
@@ -191,21 +157,21 @@ $(document).ready(function () {
     }
 
     function prepareSelect(id) {
-        tituloModal.text('Detalles sobre la Actividad');
+        tituloModal.text('Detalles sobre la Planificación');
         $('#rsdtForm').find(':input').prop('disabled', true);
         $('#botonesModal').addClass('opacity-0');
         show(id);
     }
 
     function prepareEdit(id) {
-        tituloModal.text('Editar Actividad');
+        tituloModal.text('Editar Planificación');
         $('#rsdtForm').find(':input').prop('disabled', false);
         show(id);
     }
 
     function prepareDelete(id) {
-        tituloModal.text('Eliminar Actividad');
-        mensajeModal.html('La siguiente actividad se eliminará a continuación,<br>¿Está seguro?');
+        tituloModal.text('Eliminar Planificación');
+        mensajeModal.html('La siguiente Planificación se eliminará a continuación,<br>¿Está seguro?');
         $('#rsdtForm').find(':input:not(button)').prop('disabled', true);
         show(id);
     }
@@ -303,13 +269,13 @@ $(document).ready(function () {
             data: { _token: _token, search: search },
             dataType: 'json',
             success: function (response) {
+                console.log(response);
                 if (response.state) {
                     $('#titulo-asignacion').text(response.motivo);
-                    let asignaciones = response.data;
-                    contadorParticipantes = asignaciones.length;
+                    let participantes = response.data;
+                    contadorParticipantes = participantes.length;
                     if (contadorParticipantes > 0) {
-                        asignaciones.forEach(asignacion => {
-                            let participante = asignacion.participante;
+                        participantes.forEach(participante => {
                             if (esParticipanteUnico(participante.id_rsdt, arrayParticipantes)) {
                                 arrayParticipantes.push(participante.id_rsdt);
                                 let divParticipante = crearDivParticipante(participante, 'Eliminar');
@@ -317,7 +283,7 @@ $(document).ready(function () {
                                 modalParticipantes.modal('show');
                             }
                             else {
-                                MostrarNotificacion('danger', 'El participante ya se encuentra en la actividad.', 5);;
+                                console.log('El participante ya se encuentra en la actividad.');
                             }
                         });
                         arrayParticipantesOriginal = arrayParticipantes.slice();
@@ -327,12 +293,12 @@ $(document).ready(function () {
                     }
                     actualizarContadores();
                 } else {
-                    MostrarNotificacion('danger', response.message, 5);
+                    console.error(response.message);
                 }
 
             },
             error: function (xhr, status, error) {
-                MostrarNotificacion('danger', xhr.responseText, 5);
+                console.error(xhr.responseText);
             }
         });
     }
@@ -377,7 +343,7 @@ $(document).ready(function () {
                     }
                 },
                 error: function (xhr, status, error) {
-                    MostrarNotificacion('danger', xhr.responseText, 5);
+                    console.log("Error en la solicitud AJAX: " + error);
                 }
             });
     }
@@ -391,17 +357,17 @@ $(document).ready(function () {
             type: 'POST',
             data: { _token: _token, idPlanificacion: idPlanificacion, idsEliminados: idsEliminados },
             success: function (response) {
+                console.log(response);
                 if (response.state) {
-                    MostrarNotificacion('success', response.message, 5);
                     resetAllOnModalParticipantes();
                     getParticipantes(idPlanificacion);
                 }
                 else {
-                    MostrarNotificacion('danger', response.message, 5);
+                    console.log(response.message);
                 }
             },
             error: function (xhr, status, error) {
-                MostrarNotificacion('danger', xhr.responseText, 5);
+                console.error(xhr.responseText);
             }
         });
     }
@@ -415,17 +381,17 @@ $(document).ready(function () {
             type: 'POST',
             data: { _token: _token, idPlanificacion: idPlanificacion, idsParticipantes: idsParticipantes },
             success: function (response) {
+                console.log(response);
                 if (response.state) {
-                    MostrarNotificacion('success', response.message, 5);
                     modalAsignaciones.modal('hide');
                     getParticipantes(idPlanificacion);
                 }
                 else {
-                    MostrarNotificacion('danger', response.message, 5);
+                    console.log(response.message);
                 }
             },
             error: function (xhr, status, error) {
-                MostrarNotificacion('danger', xhr.responseText, 5);
+                console.error(xhr.responseText);
             }
         });
     }
@@ -452,9 +418,9 @@ $(document).ready(function () {
                             <th>ID</th>
                             <th>MOTIVO</th>
                             <th>AREA</th>
-                            <th>CUOTA BS.</th>
+                            <th>PAGO</th>
                             <th>INICIO</th>
-                            <th>CONCLUSIÓN</th>
+                            <th>FIN</th>
                             <th width="200">ACCIONES</th>
                         </tr>
                     </thead>
@@ -466,7 +432,7 @@ $(document).ready(function () {
                             <td>${planificacion.id_plan}</td>
                             <td>${planificacion.motivo_plan}</td>
                             <td>${planificacion.area_plan}</td>
-                            <td>${planificacion.cuota_plan}</td>
+                            <td>${planificacion.pago_plan}</td>
                             <td>${planificacion.inicio_plan}</td>
                             <td>${planificacion.fin_plan}</td>
                             <td>
@@ -492,7 +458,7 @@ $(document).ready(function () {
                 }
             },
             error: function (xhr, status, error) {
-                MostrarNotificacion('danger', xhr.responseText, 5);
+                console.error(xhr.responseText);
             }
         });
     }
@@ -505,8 +471,8 @@ $(document).ready(function () {
             type: 'POST',
             data: formData,
             success: function (response) {
+                console.log(response);
                 if (response.state) {
-                    MostrarNotificacion('success', response.message, 5);
                     searchInput.val(response.data.id_plan);
                     index(response.data.id_plan);
                     modalMain.modal('hide');
@@ -515,11 +481,11 @@ $(document).ready(function () {
                     }, 700);
                 }
                 else {
-                    MostrarNotificacion('danger', response.message, 5);
+                    console.log(response.message);
                 }
             },
             error: function (xhr, status, error) {
-                MostrarNotificacion('danger', xhr.responseText, 5);
+                console.error(xhr.responseText);
             }
         });
     }
@@ -530,7 +496,7 @@ $(document).ready(function () {
         $('#motivo_plan').val(planificacion.motivo_plan);
         $('#descripcion_plan').val(planificacion.descripcion_plan);
         $('#area_plan').val(planificacion.area_plan);
-        $('#cuota_plan').val(planificacion.cuota_plan);
+        $('#pago_plan').val(planificacion.pago_plan);
         $('#inicio_plan').val(planificacion.inicio_plan);
         $('#fin_plan').val(planificacion.fin_plan);
     }
@@ -543,28 +509,32 @@ $(document).ready(function () {
             data: { _token: _token },
             dataType: 'json',
             success: function (response) {
+                console.log(response);
                 if (response.state) {
                     llenarFormulario(response.data);
                     modalMain.modal('show');
                 } else {
-                    MostrarNotificacion('danger', response.message, 5);
+                    console.error(response.message);
                 }
             },
             error: function (xhr, status, error) {
-                MostrarNotificacion('danger', xhr.responseText, 5);
+                console.error(xhr.responseText);
             }
         });
     }
 
     function update(id) {
         let formData = $('#rsdtForm').serialize();
+
         $.ajax({
             url: urlUpdate + id,
             type: 'PUT',
             data: formData,
             success: function (response) {
+                console.log(response);
                 if (response.state) {
-                    MostrarNotificacion('success', response.message, 5);
+                    // Actualización exitosa
+                    console.log("¡Actualización exitosa!");
                     searchInput.val(response.data.id_plan);
                     index(response.data.id_plan);
                     modalMain.modal('hide');
@@ -572,12 +542,12 @@ $(document).ready(function () {
                         searchInput.focus();
                     }, 700);
                 } else {
-                    MostrarNotificacion('danger', response.message, 5);
+                    console.error(response.message);
                 }
             },
             error: function (xhr, status, error) {
                 // Si hay un error en la solicitud AJAX, muestra el mensaje de error en la consola
-                MostrarNotificacion('danger', xhr.responseText, 5);
+                console.error(xhr.responseText);
             }
         });
     }
@@ -591,16 +561,16 @@ $(document).ready(function () {
             data: { _token: _token },
             success: function (response) {
                 if (response.state) {
-                    MostrarNotificacion('success', response.message, 5);
+                    console.log(response.message);
                     searchInput.val('');
                     index();
                     modalMain.modal('hide');
                 } else {
-                    MostrarNotificacion('danger', response.message, 5);
+                    console.error(response.message);
                 }
             },
             error: function (xhr, status, error) {
-                MostrarNotificacion('danger', xhr.responseText, 5);
+                console.error(xhr.responseText);
             }
         });
     }
@@ -649,7 +619,7 @@ $(document).ready(function () {
             }
             else
             {
-                MostrarNotificacion('danger', 'El participante ya se encuentra en la lista', 5);
+                console.log('El participante ya se encuentra en la lista.');
             }
         }
         resetSelect();
@@ -783,15 +753,7 @@ $(document).ready(function () {
         let idParticipante = parseInt(divParticipante.find('.id_participante').text());
         let nombreParticipante = divParticipante.find('.nombre_participante').text();
         let rolParticipante = divParticipante.find('.rol_participante').text();
-        let pagadoParticipante = divParticipante.find('.pagado_participante').text();
-        let restanteParticipante = divParticipante.find('.restante_participante').text();
-        let participante = {
-            id_rsdt: idParticipante,
-            nombre_rsdt: nombreParticipante,
-            totalPagado: pagadoParticipante,
-            restante: restanteParticipante,
-            usuario: { roles: [{ name: rolParticipante }] }
-        };
+        let participante = { id_rsdt: idParticipante, nombre_rsdt: nombreParticipante, usuario: { roles: [{ name: rolParticipante }] } }
         let accion = $(this).attr('name');
 
         moverParticipante(participante, accion, divParticipante);

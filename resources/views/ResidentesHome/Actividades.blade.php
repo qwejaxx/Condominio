@@ -1,4 +1,164 @@
-$(document).ready(function () {
+@extends('layouts.menu')
+@section('stylesExtra')
+    <link href="{{ asset('Resources/css/select2.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('Resources/css/select2-bootstrap-5-theme.css') }}" rel="stylesheet">
+@endsection
+@section('scriptsExtra')
+    <script src="{{ asset('Resources/js/select2.min.js') }}"></script>
+@endsection
+@section('controllerLinks')
+    <input id="url-user" type="hidden" name="url-user" value="{{ route('indexRepRsdt') }}">
+    <input id="url-index" type="hidden" name="url-index" value="{{ route('indexActividades') }}">
+    <input id="url-store" type="hidden" name="url-store" value="{{ route('storePlan') }}">
+    <input id="url-show" type="hidden" name="url-show" value="{{ route('Planificaciones') }}">
+    <input id="url-store-asignaciones" type="hidden" name="url-store-asignaciones"
+        value="{{ route('storeParticipantes') }}">
+    <input id="url-update-asignaciones" type="hidden" name="url-update-asignaciones"
+        value="{{ route('updateParticipantes') }}">
+@endsection
+@section('Titulo')
+    <i class="fa-solid fa-list me-2"></i>Lista de Actividades
+@endsection
+@section('Contenido')
+    <div class="row justify-content-between">
+        <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 col-xxl-3">
+            <div class="input-group mb-3">
+                <input type="text" class="form-control form-control-sm" placeholder="Buscar" name="search"
+                    id="search">
+            </div>
+        </div>
+        <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 col-xxl-3 d-flex justify-content-end">
+            <div class="modal fade" id="modalMain" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+                aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-custom">
+                        <input id="id_plan" type="hidden" name="id_plan">
+                        <form id="rsdtForm">
+                            <div class="header">
+                                <div><i class="fa-solid fa-sitemap me-2"></i><span id="modal-titulo">Nueva
+                                        Actividad</span>
+                                </div>
+                                <i class="fa-solid fa-xmark modal-close" data-bs-dismiss="modal"></i>
+                            </div>
+                            <div class="body">
+                                <div class="text-center" id="modal-mensaje"></div>
+                                @csrf
+                                <div class="d-flex flex-column mb-1">
+                                    <label for="motivo_plan" class="label-form">Motivo:</label>
+                                    <input type="text" class="form-control form-control-sm" id="motivo_plan"
+                                        name="motivo_plan">
+                                </div>
+                                <div class="d-flex flex-column mb-1">
+                                    <label for="descripcion_plan" class="label-form">Descripción:</label>
+                                    <textarea class="area form-control form-control-sm" id="descripcion_plan" name="descripcion_plan" rows="3"></textarea>
+                                </div>
+                                <div class="d-flex flex-column mb-1">
+                                    <label for="area_plan" class="label-form">Area:</label>
+                                    <input type="text" class="form-control form-control-sm" id="area_plan"
+                                        name="area_plan">
+                                </div>
+                                <div class="d-flex flex-column mb-1">
+                                    <label for="cuota_plan" class="label-form">Cuota por residente Bs.:</label>
+                                    <input type="text" class="form-control form-control-sm" id="cuota_plan"
+                                        name="cuota_plan">
+                                </div>
+                                <div class="d-flex flex-column mb-1">
+                                    <label for="inicio_plan" class="label-form">Inicio:</label>
+                                    <input type="datetime-local" class="form-control form-control-sm" id="inicio_plan"
+                                        name="inicio_plan">
+                                </div>
+                                <div class="d-flex flex-column mb-1">
+                                    <label for="fin_plan" class="label-form">Fin:</label>
+                                    <input type="datetime-local" class="form-control form-control-sm" id="fin_plan"
+                                        name="fin_plan">
+                                </div>
+                            </div>
+                            <div class="footer">
+                                <div id="botonesModal">
+                                    <button type="button" class="btn btn-sm btn-secondary"
+                                        data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="submit" name="store" id="btnCrud"
+                                        class="btn btn-sm btn-outline-light">Agregar</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="modalParticipantes" data-bs-backdrop="static" data-bs-keyboard="false"
+                tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-custom">
+                        <div class="header">
+                            <div>
+                                <i class="fa-solid fa-list me-2"></i>Lista de Participantes
+                            </div>
+                            <i class="fa-solid fa-xmark modal-close" data-bs-dismiss="modal"></i>
+                        </div>
+                        <div class="body">
+                            <div class="text-center"></div>
+                            <div>
+                                <h4 id="titulo-asignacion" class="m-0 text-center text-uppercase"></h4>
+                                <hr class="my-2">
+                                <input type="text" class="form-control form-control-sm mt-2 mb-2" placeholder="Buscar"
+                                    name="searchParticipantes" id="searchParticipantes">
+                                <div id="noResultsMessage" class="mb-2 d-none">No se encontraron resultados.</div>
+                                <p class="mb-0">
+                                    Participantes
+                                    <span class="fw-bold"> · </span>
+                                    <span id="contadorParticipantes"></span>
+                                </p>
+                                <div id="participantesContainer"></div>
+                                <div class="mt-2 mb-2" id="etiquetaOculta" hidden>
+                                    Participantes a eliminar
+                                    <span class="fw-bold"> · </span>
+                                    <span id="contadorParticipantesEliminados"></span>
+                                </div>
+                                <div id="participantesEliminadosContainer"></div>
+                            </div>
+                        </div>
+                        <div class="footer">
+                            <div id="botonesModalParticipantes" class="opacity-0">
+                                <button type="button" class="btn btn-sm btn-outline-light"
+                                    data-bs-dismiss="modal">Cancelar</button>
+                                <button disabled name="btnUpdateAsignaciones" id="btnUpdateAsignaciones"
+                                    class="btn btn-sm btn-secondary ms-1">Guardar
+                                    Cambios</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div id="cardsDep" class="row gy-3"></div>
+        </div>
+    </div>
+    <div id="index-error" class="text-small text-center"></div>
+    <div id="seccionTotalResultados" class="mt-3 d-none">
+        <nav class="row g-3 justify-content-between">
+            <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 col-xxl-3">
+                <ul id="pagination-container"
+                    class="pagination pagination-sm justify-content-center justify-content-sm-start m-0">
+                </ul>
+            </div>
+            <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 col-xxl-3">
+                <div class="input-group input-group-sm justify-content-center justify-content-sm-end">
+                    <label class="input-group-text border-secondary bg-gray" for="totalResultados">N° Resultados:</label>
+                    <select class="form-select border-secondary page-select" id="totalResultados" name="totalResultados">
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                        <option value="15" selected>15</option>
+                        <option value="20">20</option>
+                    </select>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <script>
+        $(document).ready(function () {
     //#region Configuraciones Iniciales
     let modalMain = $('#modalMain');
     let tituloModal = $('#modal-titulo');
@@ -31,34 +191,6 @@ $(document).ready(function () {
     //#endregion
 
     //#region Funciones Extras
-    function MostrarNotificacion(clase, texto, segundos)
-    {
-        let aux = $("#notificacion");
-        if (aux.html() != undefined)
-        {
-            aux.remove();
-        }
-        let html = `
-        <div id="notificacion" class="alerta show fade alert p-0 alert-dismissible alert-${clase}">
-            <div class="d-flex justify-content-between align-items-center py-1 px-2 gap-2">
-                <div class="text-justify" style="font-size: 12.6px">Notificación.</div>
-                <button class="btn btn-sm p-0 text-${clase}" id="btnCerrarAlerta" type="button" data-bs-dismiss="alert" data-bs-target="#notificacion">
-                    <i class="fa-solid fa-xmark text-dark"></i>
-                </button>
-            </div>
-            <hr class="m-0">
-            <div class="py-1 px-2">
-                <div class="text-justify alerta-text">` + texto + `</div>
-            </div>
-        </div>`;
-        $("body").append(html);
-        let alerta = $("#notificacion");
-        setTimeout(function()
-        {
-            alerta.alert("close");
-        }, segundos * 1000);
-    }
-
     function resetAllOnModal() {
         $('#rsdtForm')[0].reset(); // Reiniciar Formulario
         $('#rsdtForm').find(':input').prop('disabled', false);
@@ -103,7 +235,7 @@ $(document).ready(function () {
                 contenedorEliminados.append(nuevoDiv);
             }
             else {
-                MostrarNotificacion('danger', 'El participante ya se encuentra en la lista de eliminados.', 5);
+                console.log('El participante ya se encuentra en la lista de eliminados.');
             }
         }
         else {
@@ -114,7 +246,7 @@ $(document).ready(function () {
                 contenedorParticipantes.append(nuevoDiv);
             }
             else {
-                MostrarNotificacion('danger', 'El participante ya se encuentra en la actividad.', 5);
+                console.log('El participante ya se encuentra en la actividad.');
             }
         }
         actualizarContadores();
@@ -176,7 +308,6 @@ $(document).ready(function () {
                         </div>
                     </div>
                 </div>
-                <button name="${accion}" class="btn btn-secondary btn-card-participante d-flex align-items-center justify-content-center rounded-start-0 rounded-end">${icono}</button>
             </div>
         `);
 
@@ -317,7 +448,7 @@ $(document).ready(function () {
                                 modalParticipantes.modal('show');
                             }
                             else {
-                                MostrarNotificacion('danger', 'El participante ya se encuentra en la actividad.', 5);;
+                                console.log('El participante ya se encuentra en la actividad.');
                             }
                         });
                         arrayParticipantesOriginal = arrayParticipantes.slice();
@@ -327,12 +458,12 @@ $(document).ready(function () {
                     }
                     actualizarContadores();
                 } else {
-                    MostrarNotificacion('danger', response.message, 5);
+                    console.error(response.message);
                 }
 
             },
             error: function (xhr, status, error) {
-                MostrarNotificacion('danger', xhr.responseText, 5);
+                console.error(xhr.responseText);
             }
         });
     }
@@ -377,57 +508,9 @@ $(document).ready(function () {
                     }
                 },
                 error: function (xhr, status, error) {
-                    MostrarNotificacion('danger', xhr.responseText, 5);
+                    console.log("Error en la solicitud AJAX: " + error);
                 }
             });
-    }
-
-    function updateAsignaciones(idPlanificacion, idsEliminados)
-    {
-        let _token = $('meta[name="csrf-token"]').attr('content');
-
-        $.ajax({
-            url: urlUpdateAsignaciones,
-            type: 'POST',
-            data: { _token: _token, idPlanificacion: idPlanificacion, idsEliminados: idsEliminados },
-            success: function (response) {
-                if (response.state) {
-                    MostrarNotificacion('success', response.message, 5);
-                    resetAllOnModalParticipantes();
-                    getParticipantes(idPlanificacion);
-                }
-                else {
-                    MostrarNotificacion('danger', response.message, 5);
-                }
-            },
-            error: function (xhr, status, error) {
-                MostrarNotificacion('danger', xhr.responseText, 5);
-            }
-        });
-    }
-
-    function storeAsignaciones(idPlanificacion, idsParticipantes)
-    {
-        let _token = $('meta[name="csrf-token"]').attr('content');
-
-        $.ajax({
-            url: urlStoreAsignaciones,
-            type: 'POST',
-            data: { _token: _token, idPlanificacion: idPlanificacion, idsParticipantes: idsParticipantes },
-            success: function (response) {
-                if (response.state) {
-                    MostrarNotificacion('success', response.message, 5);
-                    modalAsignaciones.modal('hide');
-                    getParticipantes(idPlanificacion);
-                }
-                else {
-                    MostrarNotificacion('danger', response.message, 5);
-                }
-            },
-            error: function (xhr, status, error) {
-                MostrarNotificacion('danger', xhr.responseText, 5);
-            }
-        });
     }
 
     function index(search = "", url = urlIndex + '?page=1') {
@@ -436,50 +519,54 @@ $(document).ready(function () {
         let error = $('#index-error');
         let seccionTotalResultados = $('#seccionTotalResultados');
         let html = "";
+        let idResidente = {{ Auth::user()->id }};
 
         $.ajax({
             url: url,
             type: 'GET',
-            data: { _token: _token, search: search, totalResultados: totalResultados },
+            data: { _token: _token, search: search, totalResultados: totalResultados, idResidente: idResidente },
             dataType: 'json',
             success: function (response) {
-                tableIndex.empty();
+                $('#cardsDep').empty();
                 if (response.data.data.length > 0) {
                     error.html('');
-                    html = `
-                    <thead class="table-secondary fw-semibold">
-                        <tr>
-                            <th>ID</th>
-                            <th>MOTIVO</th>
-                            <th>AREA</th>
-                            <th>CUOTA BS.</th>
-                            <th>INICIO</th>
-                            <th>CONCLUSIÓN</th>
-                            <th width="200">ACCIONES</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                `;
                     response.data.data.forEach(planificacion => {
+                        let asignacion = planificacion.asignaciones[0];
                         html += `
-                        <tr>
-                            <td>${planificacion.id_plan}</td>
-                            <td>${planificacion.motivo_plan}</td>
-                            <td>${planificacion.area_plan}</td>
-                            <td>${planificacion.cuota_plan}</td>
-                            <td>${planificacion.inicio_plan}</td>
-                            <td>${planificacion.fin_plan}</td>
-                            <td>
-                                <button id='btnAdd' data-id="${planificacion.id_plan}" class='btn p-0 btn-sm btn-info text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalParticipantes'><i class='fas fa-users'></i></button>
-                                <button id='btnSelect' data-id="${planificacion.id_plan}" class='btn p-0 btn-sm btn-success text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-magnifying-glass-plus'></i></button>
-                                <button id='btnEdit' data-id="${planificacion.id_plan}" class='btn p-0 btn-sm btn-secondary text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-pen-to-square'></i></button>
-                                <button id='btnDelete' data-id="${planificacion.id_plan}" class='btn p-0 btn-sm btn-primary' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-trash'></i></button>
-                            </td>
-                        </tr>
-                    `;
+                            <div class="col-12 col-sm-12 col-md-12 col-lg-6 col-xl-6 col-xxl-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h6 class="m-0">${planificacion.motivo_plan}</h6>
+                                            <div class="dropend">
+                                                <button class="btn-more-options" type="button" data-bs-toggle="dropdown">
+                                                    <i class="fa-solid fa-ellipsis"></i>
+                                                </button>
+                                                <ul class="dropdown-menu p-0" style="width: auto; line-height: 1px;">
+                                                    <li>
+                                                        <button id="btnSelect" data-id="${planificacion.id_plan}" class="dropdown-item rounded-top px-2 py-2"><i
+                                                                class="fa-solid fa-clipboard me-3"></i>Detalles</button>
+                                                    </li>
+                                                    <li>
+                                                        <button id='btnAdd' data-id="${planificacion.id_plan}" class='dropdown-item rounded-top px-2 py-2'><i class='fas fa-users me-2'></i>Ver Participantes</button>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <h3 class="m-0">PAGADO: ${asignacion.totalPagado} Bs.</h3>
+                                            <div>Debe: ${asignacion.restante} Bs.</div>
+                                            <hr class="mt-1">
+                                            <h6 class="m-0">Inicio: <span class="fw-normal">${planificacion.inicio_plan}</span></h6>
+                                            <h6 class="m-0">Conclusión: <span class="fw-normal">${planificacion.fin_plan}</span></h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
                     });
-                    html += `</tbody>`;
-                    tableIndex.append(html);
+
+                    $('#cardsDep').append(html);
 
                     // Llamar a la función para generar los botones de paginación
                     generatePaginationButtons(response.data.current_page, response.data.last_page, url, search);
@@ -492,34 +579,7 @@ $(document).ready(function () {
                 }
             },
             error: function (xhr, status, error) {
-                MostrarNotificacion('danger', xhr.responseText, 5);
-            }
-        });
-    }
-
-    function store() {
-        let formData = $('#rsdtForm').serialize();
-
-        $.ajax({
-            url: urlStore,
-            type: 'POST',
-            data: formData,
-            success: function (response) {
-                if (response.state) {
-                    MostrarNotificacion('success', response.message, 5);
-                    searchInput.val(response.data.id_plan);
-                    index(response.data.id_plan);
-                    modalMain.modal('hide');
-                    setTimeout(function () {
-                        searchInput.focus();
-                    }, 700);
-                }
-                else {
-                    MostrarNotificacion('danger', response.message, 5);
-                }
-            },
-            error: function (xhr, status, error) {
-                MostrarNotificacion('danger', xhr.responseText, 5);
+                console.error(xhr.responseText);
             }
         });
     }
@@ -547,60 +607,11 @@ $(document).ready(function () {
                     llenarFormulario(response.data);
                     modalMain.modal('show');
                 } else {
-                    MostrarNotificacion('danger', response.message, 5);
+                    console.error(response.message);
                 }
             },
             error: function (xhr, status, error) {
-                MostrarNotificacion('danger', xhr.responseText, 5);
-            }
-        });
-    }
-
-    function update(id) {
-        let formData = $('#rsdtForm').serialize();
-        $.ajax({
-            url: urlUpdate + id,
-            type: 'PUT',
-            data: formData,
-            success: function (response) {
-                if (response.state) {
-                    MostrarNotificacion('success', response.message, 5);
-                    searchInput.val(response.data.id_plan);
-                    index(response.data.id_plan);
-                    modalMain.modal('hide');
-                    setTimeout(function () {
-                        searchInput.focus();
-                    }, 700);
-                } else {
-                    MostrarNotificacion('danger', response.message, 5);
-                }
-            },
-            error: function (xhr, status, error) {
-                // Si hay un error en la solicitud AJAX, muestra el mensaje de error en la consola
-                MostrarNotificacion('danger', xhr.responseText, 5);
-            }
-        });
-    }
-
-    function destroy(id) {
-        let _token = $('meta[name="csrf-token"]').attr('content');
-
-        $.ajax({
-            url: urlDelete + id,
-            type: 'DELETE',
-            data: { _token: _token },
-            success: function (response) {
-                if (response.state) {
-                    MostrarNotificacion('success', response.message, 5);
-                    searchInput.val('');
-                    index();
-                    modalMain.modal('hide');
-                } else {
-                    MostrarNotificacion('danger', response.message, 5);
-                }
-            },
-            error: function (xhr, status, error) {
-                MostrarNotificacion('danger', xhr.responseText, 5);
+                console.error(xhr.responseText);
             }
         });
     }
@@ -609,50 +620,11 @@ $(document).ready(function () {
     //#region Interacción DOM
 
     //#region Extras
-    $('#asignacionBtn').on('click', function () {
-        let id = $('#id_plan').val();
-        getNoParticipantesOnSelect(id);
-    });
-
     $("#SelParti").select2({
         theme: "bootstrap-5",
         selectionCssClass: "select2--small",
         dropdownCssClass: "select2--small",
         dropdownParent: $('#modalAsignaciones')
-    });
-
-    $('#btnRegresarAsig').on('click', function () {
-        let id = $('#id_plan').val();
-        getParticipantes(id);
-    });
-
-    $('#SelParti').on('change', function() {
-        let idParticipante = parseInt($(this).find('option:selected').val());
-        if (idParticipante > 0)
-        {
-            let nombreParticipante = $(this).find('option:selected').text();
-            let rolParticipante = $(this).find('option:selected').data('rol');
-            let participante = {
-                id_rsdt: idParticipante,
-                nombre_rsdt: nombreParticipante,
-                usuario: { roles: [ { name: rolParticipante } ] }
-            };
-
-            if (esParticipanteUnico(idParticipante, arrayParticipantesNuevos))
-            {
-                let nuevoDiv = crearDivParticipante(participante, 'Eliminar');
-                contenedorSeleccionados.append(nuevoDiv);
-                arrayParticipantesNuevos.push(idParticipante);
-                actualizarContadorNuevos();
-
-                btnAsignar.prop('disabled', arrayParticipantes.length > 0)
-            }
-            else
-            {
-                MostrarNotificacion('danger', 'El participante ya se encuentra en la lista', 5);
-            }
-        }
-        resetSelect();
     });
     //#endregion
 
@@ -668,21 +640,36 @@ $(document).ready(function () {
     $('#totalResultados').on('input', function () {
         index(searchInput.val());
     });
+    //#endregion
+
+    //#region Activacion de botones de CRUD
+    $('#cardsDep').on('click', '#btnAdd', function () {
+        let id = $(this).data('id');
+        prepareAsignacion(id);
+    });
+
+    $('#cardsDep').on('click', '#btnSelect', function () {
+        let id = $(this).data('id');
+        btnCrud.attr('name', 'show');
+        btnCrud.text('Show');
+        prepareSelect(id);
+    });
+    //#endregion
+
+    //#region Configuracion en Modales
+    modalMain.on('hidden.bs.modal', function () {
+        resetAllOnModal();
+    });
+
+    modalParticipantes.on('hidden.bs.modal', function () {
+        resetAllOnModalParticipantes();
+    });
+    //#endregion
 
     $('#searchParticipantes').on('input', function() {
         let searchText = $(this).val().toLowerCase();
         let resultadosEncontrados = false;
         $('#participantesContainer .datoUser').each(function() {
-            let nombreParticipante = $(this).find('.nombre_participante').text().toLowerCase();
-            if (nombreParticipante.includes(searchText)) {
-                $(this).removeClass('d-none');
-                resultadosEncontrados = true;
-            } else {
-                $(this).addClass('d-none');
-            }
-        });
-
-        $('#participantesEliminadosContainer .datoUser').each(function() {
             let nombreParticipante = $(this).find('.nombre_participante').text().toLowerCase();
             if (nombreParticipante.includes(searchText)) {
                 $(this).removeClass('d-none');
@@ -698,84 +685,6 @@ $(document).ready(function () {
             $('#noResultsMessage').addClass('d-none');
         }
     });
-    //#endregion
-
-    //#region CRUD
-    btnCrud.click(function (e) {
-        e.preventDefault();
-        let action = $(this).attr('name');
-        let id = $('#id_plan').val();
-        switch (action) {
-            case "store":
-                {
-                    store();
-                }
-                break;
-            case "edit":
-                {
-                    update(id);
-                }
-                break;
-            case "delete":
-                {
-                    destroy(id);
-                }
-                break;
-        }
-    });
-
-    btnAsignar.click(function () {
-        let id = $('#id_plan').val();
-        storeAsignaciones(id, arrayParticipantesNuevos);
-    });
-
-    btnUpdateAsignaciones.click(function () {
-        let id = $('#id_plan').val();
-        updateAsignaciones(id, arrayParticipantesEliminados);
-    });
-    //#endregion
-
-    //#region Activacion de botones de CRUD
-    tableIndex.on('click', '#btnAdd', function () {
-        let id = $(this).data('id');
-        prepareAsignacion(id);
-    });
-
-    tableIndex.on('click', '#btnSelect', function () {
-        let id = $(this).data('id');
-        btnCrud.attr('name', 'show');
-        btnCrud.text('Show');
-        prepareSelect(id);
-    });
-
-    tableIndex.on('click', '#btnEdit', function () {
-        let id = $(this).data('id');
-        btnCrud.attr('name', 'edit');
-        btnCrud.text('Editar');
-        prepareEdit(id);
-    });
-
-    tableIndex.on('click', '#btnDelete', function () {
-        let id = $(this).data('id');
-        btnCrud.attr('name', 'delete');
-        btnCrud.text('Eliminar');
-        prepareDelete(id);
-    });
-    //#endregion
-
-    //#region Configuracion en Modales
-    modalMain.on('hidden.bs.modal', function () {
-        resetAllOnModal();
-    });
-
-    modalParticipantes.on('hidden.bs.modal', function () {
-        resetAllOnModalParticipantes();
-    });
-
-    modalAsignaciones.on('hidden.bs.modal', function () {
-        resetAllOnModalAsignaciones();
-    });
-    //#endregion
 
     //#region Interaccion con Cards de Participantes en el Modal Participantes
     modalParticipantes.on('click', '.btn-card-participante', function () {
@@ -811,3 +720,6 @@ $(document).ready(function () {
     });
     //#endregion
 });
+
+    </script>
+@endsection

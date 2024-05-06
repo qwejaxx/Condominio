@@ -11,9 +11,23 @@ $(document).ready(function () {
     let urlShow = $('#url-show').val() + '/';
     let urlUpdate = urlShow;
     let urlDelete = urlShow;
+    let urlNoAsignaciones = 'Planificaciones/NoAsignaciones/';
+    let urlGetPlan = $('#url-get-plan').val();
     //#endregion
 
     //#region Funciones Extras
+    function resetAllOnModal() {
+        $('#rsdtForm')[0].reset();
+        $('#rsdtForm').find(':input').prop('disabled', false);
+        $('#botonesModal').removeClass('opacity-0');
+        $('#planificacion_id_asip').val($('#planificacion_id_asip option:first').val()).trigger('change');
+        $('#participante_id_asip').val($('#participante_id_asip option:first').val()).trigger('change');
+        tituloModal.text('Registrar asignación');
+        mensajeModal.html('');
+        btnCrud.attr('name', 'store');
+        btnCrud.text('Registrar');
+    }
+
     function MostrarNotificacion(clase, texto, segundos)
     {
         let aux = $("#notificacion");
@@ -42,36 +56,122 @@ $(document).ready(function () {
         }, segundos * 1000);
     }
 
-    function resetAllOnModal() {
-        $('#rsdtForm')[0].reset(); // Reiniciar Formulario
-        $('#rsdtForm').find(':input').prop('disabled', false);
-        $('#botonesModal').removeClass('opacity-0');
-        $('#propietario_id_mas').val($('#propietario_id_mas option:first').val()).trigger('change');
-        tituloModal.text('Nuevo Parqueo');
-        mensajeModal.html('');
-        btnCrud.attr('name', 'store');
-        btnCrud.text('Agregar');
+    function getNoParticipantesOnSelect(id) {
+        let _token = $('meta[name="csrf-token"]').attr('content');
+        let select = $("#participante_id_asip");
+
+        $.ajax(
+            {
+                url: urlNoAsignaciones + id,
+                type: 'GET',
+                data: { _token: _token },
+                dataType: 'json',
+                success: function (response) {
+                    let participantes = response.data;
+                    if (participantes.length > 0) {
+                        select.empty();
+                        participantes.forEach(participante => {
+                            let idParticipante = participante.id_rsdt;
+                            let nombreParticipante = participante.nombre_rsdt + ' ' + participante.apellidop_rsdt;
+                            let rolParticipante = participante.usuario.roles[0].name;
+
+                            let option = `
+                                <option data-rol='${rolParticipante}' value='${idParticipante}'>${nombreParticipante}</option>
+                            `;
+                            select.append(option);
+                        });
+
+                        select.find('option').first().prop('selected', true).trigger('change');
+                    }
+                    else {
+                        select.empty();
+                        select.append($("<option>",
+                            {
+                                value: 0, text: 'No hay participantes disponibles.', selected: true, disabled: true
+                            }));
+                        select.trigger('change');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    MostrarNotificacion('danger', error, 5);
+                }
+            });
     }
+
+    function getPlanificacionesOnSelect() {
+        let _token = $('meta[name="csrf-token"]').attr('content');
+        let select = $("#planificacion_id_asip");
+
+        $.ajax(
+            {
+                url: urlGetPlan,
+                type: 'GET',
+                data: { _token: _token },
+                dataType: 'json',
+                success: function (response) {
+                    let planificacion = response.data.data;
+
+                    if (planificacion.length > 0) {
+                        select.empty();
+                        planificacion.forEach(planificacion => {
+                            let idPlanificacion = planificacion.id_plan;
+                            let nombrePlanificacion = planificacion.motivo_plan;
+
+                            let option = `
+                                <option value='${idPlanificacion}'>${nombrePlanificacion}</option>
+                            `;
+                            select.append(option);
+                        });
+
+                        select.find('option').first().prop('selected', true).trigger('change');
+                    }
+                    else {
+                        select.empty();
+                        select.append($("<option>",
+                            {
+                                value: 0, text: 'No hay planificaciones disponibles.', selected: true, disabled: true
+                            }));
+                        select.trigger('change');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    MostrarNotificacion('danger', error, 5);
+                }
+            });
+    }
+
+    function revisarSeleccion() {
+        let participante = $("#participante_id_asip").val();
+        if (participante !== null && participante !== '0') {
+            btnCrud.prop("disabled", false);
+        } else {
+            btnCrud.prop("disabled", true);
+        }
+    }
+
     //#endregion
 
     //#region Funciones Prepare
     function prepareSelect(id) {
-        tituloModal.text('Detalles sobre el Parqueo');
+        tituloModal.text('Detalles sobre la asignación');
         $('#rsdtForm').find(':input').prop('disabled', true);
+        $('#password').attr('type', 'password');
         $('#botonesModal').addClass('opacity-0');
         show(id);
     }
 
     function prepareEdit(id) {
-        tituloModal.text('Editar Parqueo');
+        tituloModal.text('Editar asignación');
         $('#rsdtForm').find(':input').prop('disabled', false);
+        $('#password').attr('type', 'password');
         show(id);
     }
 
     function prepareDelete(id) {
-        tituloModal.text('Eliminar Parqueo');
-        mensajeModal.html('El siguiente Parqueo se eliminará a continuación,<br>¿Está seguro?');
+        tituloModal.text('Eliminar asignación');
+        mensajeModal.html('La siguiente asignación se eliminará a continuación,<br>¿Está seguro?');
         $('#rsdtForm').find(':input:not(button)').prop('disabled', true);
+        $('#password').attr('type', 'password');
         show(id);
     }
     //#endregion
@@ -178,28 +278,40 @@ $(document).ready(function () {
                     html = `
                     <thead class="table-secondary fw-semibold">
                         <tr>
-                            <th>ID</th>
-                            <th>CODIGO</th>
-                            <th>SLOTS</th>
-                            <th width="200">ACCIONES</th>
+                            <th class="align-middle" rowspan="2">ID</th>
+                            <th class="align-middle" rowspan="2">ACTIVIDAD</th>
+                            <th colspan="2">PARTICIPANTE</th>
+                            <th class="align-middle" colspan="2">CUOTA BS.</th>
+                            <th class="align-middle" rowspan="2" width="200">ACCIONES</th>
+                        </tr>
+                        <tr>
+                            <th>CI</th>
+                            <th>NOMBRE</th>
+                            <th>PAGADO</th>
+                            <th>RESTANTE</th>
                         </tr>
                     </thead>
                     <tbody>
                 `;
-                    response.data.data.forEach(parqueo => {
+                    response.data.data.forEach(asignacion => {
+                        let planificacion = asignacion.planificacion;
+                        let participante = asignacion.participante;
                         html += `
                         <tr>
-                            <td>${parqueo.id_park}</td>
-                            <td>${parqueo.codigo_park}</td>
-                            <td>${parqueo.slots_park}</td>
+                            <td>${asignacion.id_asip}</td>
+                            <td>${planificacion.motivo_plan}</td>
+                            <td>${participante.ci_rsdt}</td>
+                            <td>${participante.nombre_rsdt} ${participante.apellidop_rsdt}</td>
+                            <td>${asignacion.totalPagado}</td>
+                            <td>${asignacion.restante}</td>
                             <td>
-                                <button id='btnSelect' data-id="${parqueo.id_park}" class='btn p-0 btn-sm btn-info text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-magnifying-glass-plus'></i></button>
-                                <button id='btnEdit' data-id="${parqueo.id_park}" class='btn p-0 btn-sm btn-secondary text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-pen-to-square'></i></button>
-                                <button id='btnDelete' data-id="${parqueo.id_park}" class='btn p-0 btn-sm btn-primary' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-trash'></i></button>
+                                <button id='btnSelect' data-id="${asignacion.id_asip}" class='btn p-0 btn-sm btn-info text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-magnifying-glass-plus'></i></button>
+                                <button id='btnDelete' data-id="${asignacion.id_asip}" class='btn p-0 btn-sm btn-secondary' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-trash'></i></button>
                             </td>
                         </tr>
                     `;
                     });
+                    {/* <button id='btnEdit' data-id="${asignacion.id_asip}" class='btn p-0 btn-sm btn-secondary text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-pen-to-square'></i></button> */}
                     html += `</tbody>`;
                     tableIndex.append(html);
 
@@ -230,8 +342,8 @@ $(document).ready(function () {
                 console.log(response);
                 if (response.state) {
                     MostrarNotificacion('success', response.message, 5);
-                    searchInput.val(response.data.id_park);
-                    index(response.data.id_park);
+                    searchInput.val(response.data.id_asip);
+                    index(response.data.id_asip);
                     modalMain.modal('hide');
                     setTimeout(function () {
                         searchInput.focus();
@@ -248,10 +360,17 @@ $(document).ready(function () {
     }
 
     function llenarFormulario(data) {
-        let parqueo = data;
-        $('#id_park').val(parqueo.id_park);
-        $('#codigo_park').val(parqueo.codigo_park);
-        $('#slots_park').val(parqueo.slots_park);
+        let asignacion = data;
+        let participante = asignacion.participante;
+        $('#id_asip').val(asignacion.id_asip);
+        $('#planificacion_id_asip').val(asignacion.planificacion_id_asip).trigger('change');
+
+        setTimeout(function () {
+            let select = $("#participante_id_asip");
+            let option = `<option value='${participante.id_rsdt}' selected="true">${participante.nombre_rsdt} ${participante.apellidop_rsdt}</option>`;
+            select.append(option);
+            select.trigger('change');
+        }, 175);
     }
 
     function show(id) {
@@ -277,17 +396,16 @@ $(document).ready(function () {
 
     function update(id) {
         let formData = $('#rsdtForm').serialize();
-
+        console.log(urlUpdate + id);
         $.ajax({
             url: urlUpdate + id,
             type: 'PUT',
             data: formData,
             success: function (response) {
-                console.log(response);
                 if (response.state) {
                     MostrarNotificacion('success', response.message, 5);
-                    searchInput.val(response.data.id_park);
-                    index(response.data.id_park);
+                    searchInput.val(response.data.id_asip);
+                    index(response.data.id_asip);
                     modalMain.modal('hide');
                     setTimeout(function () {
                         searchInput.focus();
@@ -297,7 +415,6 @@ $(document).ready(function () {
                 }
             },
             error: function (xhr, status, error) {
-                // Si hay un error en la solicitud AJAX, muestra el mensaje de error en la consola
                 MostrarNotificacion('danger', xhr.responseText, 5);
             }
         });
@@ -328,19 +445,10 @@ $(document).ready(function () {
     //#endregion
 
     //#region Interacción DOM
-    //#region Extras
-    //#region Select2 con Buscador
-    $("#propietario_id_mas").select2({
-        theme: "bootstrap-5",
-        selectionCssClass: "select2--small",
-        dropdownCssClass: "select2--small",
-        dropdownParent: $('#modalMain')
-    });
-    //#endregion
-    //#endregion
-
     //#region Funciones de Carga Inicial
     index();
+    getPlanificacionesOnSelect();
+    getNoParticipantesOnSelect($("#planificacion_id_asip").val());
     //#endregion
 
     //#region Busqueda
@@ -353,11 +461,36 @@ $(document).ready(function () {
     });
     //#endregion
 
-    //#region Store
+    //#region Select2 con Buscador
+    $("#participante_id_asip").select2({
+        theme: "bootstrap-5",
+        selectionCssClass: "select2--small",
+        dropdownCssClass: "select2--small",
+        dropdownParent: $('#modalMain')
+    });
+
+    $("#planificacion_id_asip").select2({
+        theme: "bootstrap-5",
+        selectionCssClass: "select2--small",
+        dropdownCssClass: "select2--small",
+        dropdownParent: $('#modalMain')
+    });
+
+    $("#planificacion_id_asip").on('change', function () {
+        let id = $(this).val();
+        getNoParticipantesOnSelect(id);
+    });
+
+    $("#participante_id_asip").on('change', function () {
+        revisarSeleccion();
+    });
+    //#endregion
+
+    //#region CRUD
     btnCrud.click(function (e) {
         e.preventDefault();
         let action = $(this).attr('name');
-        let id = $('#id_park').val();
+        let id = $('#id_asip').val();
         switch (action) {
             case "store":
                 {

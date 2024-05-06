@@ -15,7 +15,9 @@ class ParqueoController extends Controller
     public function index(Request $request)
     {
         try {
-            $parqueos = Parqueo::paginate($request->totalResultados);
+            $search = '%' . $request->search . '%';
+            $parqueos = Parqueo::where('codigo_park', 'LIKE', $search)
+                ->orWhere('id_park', 'LIKE', $search)->paginate($request->totalResultados);
 
             $response = [
                 'state' => true,

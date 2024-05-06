@@ -12,8 +12,7 @@ class LoginController extends Controller
 {
     public function showLogin()
     {
-        if (Auth::check())
-        {
+        if (Auth::check()) {
             return redirect()->intended('/');
         }
 
@@ -27,8 +26,7 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
-        try
-        {
+        try {
             $credentials = [
                 'email' => $request->email,
                 'password' => $request->password
@@ -36,22 +34,32 @@ class LoginController extends Controller
 
             $remember = ($request->has('remember') ? true : false);
 
-            if (Auth::attempt($credentials, $remember))
-            {
+            if (Auth::attempt($credentials, $remember)) {
                 $user = Auth::user();
 
-                if ($user->estado == 1)
-                {
+                if ($user->estado == 1) {
+                    $rol = $user->roles->first();
+
+                    switch ($rol->name) {
+                        case 'Administrador':
+                            $redirectUrl = '/Residentes';
+                            break;
+                        case 'Personal de Seguridad':
+                            $redirectUrl = '/Visitas';
+                            break;
+                        default:
+                            $redirectUrl = '/ResidentesHome';
+                            break;
+                    }
+
                     $request->session()->regenerate();
-                    $url = redirect()->intended('/Residentes')->getTargetUrl();
+                    $url = redirect()->intended($redirectUrl)->getTargetUrl();
                     $response = [
                         'state' => true,
                         'message' => 'Inicio de Sesión Exitoso',
                         'redirect' => $url,
                     ];
-                }
-                else
-                {
+                } else {
                     Auth::logout();
                     $url = redirect('login')->getTargetUrl();
                     $response = [
@@ -60,9 +68,7 @@ class LoginController extends Controller
                         'redirect' => $url,
                     ];
                 }
-            }
-            else
-            {
+            } else {
                 $url = redirect('login')->getTargetUrl();
                 $response = [
                     'state' => false,
@@ -70,26 +76,21 @@ class LoginController extends Controller
                     'redirect' => $url,
                 ];
             }
-        }
-        catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             $url = redirect('login')->getTargetUrl();
             $response = [
                 'state' => false,
                 'message' => 'Error en login: ' . $e->getMessage(),
                 'redirect' => $url,
             ];
-        }
-        finally
-        {
+        } finally {
             return response()->json($response);
         }
     }
 
     public function logout(Request $request)
     {
-        try
-        {
+        try {
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
@@ -101,19 +102,14 @@ class LoginController extends Controller
                 'message' => 'Se ha cerrado la sesión.',
                 'redirect' => $url
             ];
-        }
-        catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             $response = [
                 'state' => false,
                 'message' => 'Error en logout: ' . $e->getMessage(),
                 'redirect' => null,
             ];
-        }
-        finally
-        {
+        } finally {
             return response()->json($response);
         }
-
     }
 }

@@ -11,6 +11,7 @@ class PlanificacionController extends Controller
     {
         return view('Planificaciones.home');
     }
+
     public function index(Request $request)
     {
         try {

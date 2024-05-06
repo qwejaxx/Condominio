@@ -18,7 +18,7 @@
         value="{{ route('updateParticipantes') }}">
 @endsection
 @section('Titulo')
-    <i class="fa-solid fa-list me-2"></i>Lista de Planificaciones
+    <i class="fa-solid fa-list me-2"></i>Lista de Actividades
 @endsection
 @section('Contenido')
     <div class="row justify-content-between">
@@ -31,7 +31,7 @@
         <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 col-xxl-3 d-flex justify-content-end">
             <button class="btn btn-secondary btn-sm mb-3" type="button" id="btnAgregar" data-bs-toggle="modal"
                 data-bs-target="#modalMain">
-                <i class="fa-solid fa-plus me-2"></i>Nueva Planificación
+                <i class="fa-solid fa-plus me-2"></i>Nueva Actividad
             </button>
             <div class="modal fade" id="modalMain" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
                 aria-hidden="true">
@@ -41,7 +41,7 @@
                         <form id="rsdtForm">
                             <div class="header">
                                 <div><i class="fa-solid fa-sitemap me-2"></i><span id="modal-titulo">Nueva
-                                        Planificación</span>
+                                        Actividad</span>
                                 </div>
                                 <i class="fa-solid fa-xmark modal-close" data-bs-dismiss="modal"></i>
                             </div>
@@ -63,9 +63,9 @@
                                         name="area_plan">
                                 </div>
                                 <div class="d-flex flex-column mb-1">
-                                    <label for="pago_plan" class="label-form">Pago:</label>
-                                    <input type="text" class="form-control form-control-sm" id="pago_plan"
-                                        name="pago_plan">
+                                    <label for="cuota_plan" class="label-form">Cuota por residente Bs.:</label>
+                                    <input type="text" class="form-control form-control-sm" id="cuota_plan"
+                                        name="cuota_plan">
                                 </div>
                                 <div class="d-flex flex-column mb-1">
                                     <label for="inicio_plan" class="label-form">Inicio:</label>

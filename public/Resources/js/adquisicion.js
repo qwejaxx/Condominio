@@ -13,11 +13,38 @@ $(document).ready(function () {
     let urlDelete = urlShow;
     let urlGetRep = $('#url-get-rep').val();
     let urlGetDptosDisp = $('#url-get-dptos-disp').val();
-    let urlGetDptos = $('#url-dpto').val() + '/index';
     let urlDepartamento = $('#url-dpto').val() + '/';
     //#endregion
 
     //#region Funciones Extras
+    function MostrarNotificacion(clase, texto, segundos)
+    {
+        let aux = $("#notificacion");
+        if (aux.html() != undefined)
+        {
+            aux.remove();
+        }
+        let html = `
+        <div id="notificacion" class="alerta show fade alert p-0 alert-dismissible alert-${clase}">
+            <div class="d-flex justify-content-between align-items-center py-1 px-2 gap-2">
+                <div class="text-justify" style="font-size: 12.6px">Notificación.</div>
+                <button class="btn btn-sm p-0 text-${clase}" id="btnCerrarAlerta" type="button" data-bs-dismiss="alert" data-bs-target="#notificacion">
+                    <i class="fa-solid fa-xmark text-dark"></i>
+                </button>
+            </div>
+            <hr class="m-0">
+            <div class="py-1 px-2">
+                <div class="text-justify alerta-text">` + texto + `</div>
+            </div>
+        </div>`;
+        $("body").append(html);
+        let alerta = $("#notificacion");
+        setTimeout(function()
+        {
+            alerta.alert("close");
+        }, segundos * 1000);
+    }
+
     function formatearFecha(fecha) {
         fecha.setHours(fecha.getHours() - 4);
         return fecha.toISOString().slice(0, 10);
@@ -363,11 +390,11 @@ $(document).ready(function () {
                     let paginationContainer = $('#pagination-container');
                     paginationContainer.empty();
                     seccionTotalResultados.addClass('d-none');
-                    error.html('No se encontraron resultados.')
+                    error.html('No se encontraron resultados.');
                 }
             },
             error: function (xhr, status, error) {
-                console.error(xhr.responseText);
+                MostrarNotificacion('danger', xhr.responseText, 5);
             }
         });
     }
@@ -383,6 +410,7 @@ $(document).ready(function () {
             success: function (response) {
                 console.log(response);
                 if (response.state) {
+                    MostrarNotificacion('success', response.message, 5);
                     searchInput.val(response.data.id_reg);
                     index(response.data.id_reg);
                     modalMain.modal('hide');
@@ -391,11 +419,11 @@ $(document).ready(function () {
                     }, 700);
                 }
                 else {
-                    console.log(response.message);
+                    MostrarNotificacion('danger', response.message, 5);
                 }
             },
             error: function (xhr, status, error) {
-                console.error(xhr.responseText);
+                MostrarNotificacion('danger', xhr.responseText, 5);
             },
             complete: function () {
                 $('#pago_reg').prop('disabled', true);
@@ -439,11 +467,11 @@ $(document).ready(function () {
                     llenarFormulario(response.data);
                     modalMain.modal('show');
                 } else {
-                    console.error(response.message);
+                    MostrarNotificacion('danger', response.message, 5);
                 }
             },
             error: function (xhr, status, error) {
-                console.error(xhr.responseText);
+                MostrarNotificacion('danger', xhr.responseText, 5);
             }
         });
     }
@@ -457,10 +485,8 @@ $(document).ready(function () {
             type: 'PUT',
             data: formData,
             success: function (response) {
-                console.log(response);
                 if (response.state) {
-                    // Actualización exitosa
-                    console.log("¡Actualización exitosa!");
+                    MostrarNotificacion('success', response.message, 5);
                     searchInput.val(response.data.id_reg);
                     index(response.data.id_reg);
                     modalMain.modal('hide');
@@ -468,12 +494,11 @@ $(document).ready(function () {
                         searchInput.focus();
                     }, 700);
                 } else {
-                    console.error(response.message);
+                    MostrarNotificacion('danger', response.message, 5);
                 }
             },
             error: function (xhr, status, error) {
-                // Si hay un error en la solicitud AJAX, muestra el mensaje de error en la consola
-                console.error(xhr.responseText);
+                MostrarNotificacion('danger', xhr.responseText, 5);
             },
             complete: function () {
                 $('#pago_reg').prop('disabled', true);
@@ -490,16 +515,16 @@ $(document).ready(function () {
             data: { _token: _token },
             success: function (response) {
                 if (response.state) {
-                    console.log(response.message);
+                    MostrarNotificacion('success', response.message, 5);
                     searchInput.val('');
                     index();
                     modalMain.modal('hide');
                 } else {
-                    console.error(response.message);
+                    MostrarNotificacion('danger', response.message, 5);
                 }
             },
             error: function (xhr, status, error) {
-                console.error(xhr.responseText);
+                MostrarNotificacion('danger', xhr.responseText, 5);
             }
         });
     }

@@ -44,7 +44,9 @@ class DepartamentoController extends Controller
     public function getParqueos()
     {
         try {
-            $parqueos = Parqueo::all();
+            $parqueosRegistrados = Departamento::whereNotNull('parqueo_id_dpto')->pluck('parqueo_id_dpto')->toArray();
+
+            $parqueos = Parqueo::whereNotIn('id_park', $parqueosRegistrados)->get();
 
             $response = [
                 'state' => true,
@@ -122,6 +124,10 @@ class DepartamentoController extends Controller
     public function store(Request $request)
     {
         try {
+            if ($request->parqueo_id_dpto == 0) {
+                $request->merge(['parqueo_id_dpto' => null]);
+            }
+
             $departamento = Departamento::create($request->all());
 
             $response = [
@@ -169,6 +175,10 @@ class DepartamentoController extends Controller
     public function update(Request $request, $id)
     {
         try {
+            if ($request->parqueo_id_dpto == 0) {
+                $request->merge(['parqueo_id_dpto' => null]);
+            }
+
             $departamento = Departamento::findOrFail($id);
             $departamento->update($request->all());
 

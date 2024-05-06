@@ -11,6 +11,9 @@ use App\Http\Controllers\PlanificacionController;
 use App\Http\Controllers\ResidenteController;
 use App\Http\Controllers\VisitanteController;
 use App\Http\Controllers\AsignacionPlanController;
+use App\Http\Controllers\ResidenteHomeController;
+use App\Http\Controllers\TransaccionesController;
+use App\Http\Controllers\VisitaController;
 
 //Rutas para reestablecer contraseña
 Route::get('password/reset', 'App\Http\Controllers\Auth\ForgotPasswordController@showLinkRequestForm')->name('password.request');
@@ -90,13 +93,20 @@ Route::put('/Parking/{id}', [ParqueoController::class, 'update'])->name('updateP
 Route::delete('/Parking/{id}', [ParqueoController::class, 'destroy'])->name('destroyPar');
 
 // Rutas para Asignacion Plan
+
 Route::get('/Planificaciones/NoAsignaciones/{id}', [AsignacionPlanController::class, 'getNoParticipantes'])->name('indexNoPartPA');
 Route::get('/Planificaciones/Asignaciones/{id}', [AsignacionPlanController::class, 'getParticipantes'])->name('indexPartPA');
-Route::get('/Planificaciones/Asignaciones', [AsignacionPlanController::class, 'showIndex'])->name('Asignaciones');
-Route::post('/Asignaciones/store', [AsignacionPlanController::class, 'storeParticipantes'])->name('storeParticipantes');
-Route::post('/Asignaciones/update', [AsignacionPlanController::class, 'updateAsignaciones'])->name('updateParticipantes');
+Route::get('/Asignaciones', [AsignacionPlanController::class, 'showIndex'])->name('Asignaciones');
+Route::post('/Asignaciones/storePart', [AsignacionPlanController::class, 'storeParticipantes'])->name('storeParticipantes');
+Route::post('/Asignaciones/updatePart', [AsignacionPlanController::class, 'updateAsignaciones'])->name('updateParticipantes');
 
-// Rutas para asignaciones
+Route::get('/Asignaciones/index', [AsignacionPlanController::class, 'index'])->name('indexAsig');
+Route::post('/Asignaciones/store', [AsignacionPlanController::class, 'store'])->name('storeAsig');
+Route::get('/Asignaciones/{id}', [AsignacionPlanController::class, 'show'])->name('showAsig');
+Route::put('/Asignaciones/{id}', [AsignacionPlanController::class, 'update'])->name('updateAsig');
+Route::delete('/Asignaciones/{id}', [AsignacionPlanController::class, 'destroy'])->name('destroyAsig');
+
+// Rutas para Adquisiciones
 Route::get('/Adquisiciones', [AdquisicionController::class, 'showIndex'])->name('Adquisiciones');
 Route::get('/Adquisiciones/index', [AdquisicionController::class, 'index'])->name('indexAdq');
 Route::get('/Adquisiciones/getDptos', [AdquisicionController::class, 'getDepartamentos'])->name('getDptos');
@@ -105,3 +115,30 @@ Route::post('/Adquisiciones/store', [AdquisicionController::class, 'store'])->na
 Route::get('/Adquisiciones/{id}', [AdquisicionController::class, 'show'])->name('showAdq');
 Route::put('/Adquisiciones/{id}', [AdquisicionController::class, 'update'])->name('updateAdq');
 Route::delete('/Adquisiciones/{id}', [AdquisicionController::class, 'destroy'])->name('destroyAdq');
+
+// Rutas para Visitados
+/* Route::get('/Visitas/indexRes', [VisitadoController::class, 'getResidentes'])->middleware('auth')->name('indexVisita');
+Route::post('/Visitas/storeVis', [VisitadoController::class, 'storeVisitas'])->name('storeVisita'); */
+
+// Rutas para Registro Visita
+Route::get('/ControlVisitas/getRes', [VisitaController::class, 'getResidentes'])->middleware('auth')->name('getRes');
+Route::get('/ControlVisitas/getVis', [VisitaController::class, 'getVisitantes'])->middleware('auth')->name('getVis');
+Route::get('/ControlVisitas', [VisitaController::class, 'showIndex'])->middleware('auth')->name('ControlVisitas');
+Route::get('/ControlVisitas/index', [VisitaController::class, 'index'])->name('indexRgVst');
+Route::post('/ControlVisitas/store', [VisitaController::class, 'store'])->name('storeRgVst');
+Route::get('/ControlVisitas/{id}', [VisitaController::class, 'show'])->name('showRgVst');
+Route::put('/ControlVisitas/{id}', [VisitaController::class, 'update'])->name('updateRgVst');
+Route::delete('/ControlVisitas/{id}', [VisitaController::class, 'destroy'])->name('destroyRgVst');
+
+// Rutas Transacciones
+Route::get('/Transacciones', [TransaccionesController::class, 'showIndex'])->middleware('auth')->name('Transacciones');
+Route::get('/Transacciones/index', [TransaccionesController::class, 'index'])->name('indexTr');
+Route::post('/Transacciones/store', [TransaccionesController::class, 'store'])->name('storeTr');
+Route::get('/Transacciones/{id}', [TransaccionesController::class, 'show'])->name('showTr');
+Route::put('/Transacciones/{id}', [TransaccionesController::class, 'update'])->name('updateTr');
+Route::delete('/Transacciones/{id}', [TransaccionesController::class, 'destroy'])->name('destroyTr');
+
+// Rutas Residentes Home
+Route::get('/ResidentesHome', [ResidenteHomeController::class, 'showIndex'])->middleware('auth')->name('ResHome');
+Route::get('/Actividades', [ResidenteHomeController::class, 'showIndexActividades'])->middleware('auth')->name('ResActividades');
+Route::get('/Actividades/index', [ResidenteHomeController::class, 'index'])->middleware('auth')->name('indexActividades');

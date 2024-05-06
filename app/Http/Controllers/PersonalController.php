@@ -192,7 +192,7 @@ class PersonalController extends Controller
 
             $response = [
                 'state' => true,
-                'message' => 'El residente se eliminó correctamente.',
+                'message' => 'El personal se eliminó correctamente.',
             ];
         } catch (\Exception $e) {
             DB::rollBack();
@@ -200,7 +200,7 @@ class PersonalController extends Controller
             // Prepara la respuesta en caso de error
             $response = [
                 'state' => false,
-                'message' => 'Error al eliminar el residente: ' . $e->getMessage(),
+                'message' => 'Error al eliminar el personal: ' . $e->getMessage(),
             ];
         }
 

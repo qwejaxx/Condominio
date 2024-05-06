@@ -7,35 +7,98 @@ use App\Models\Residente;
 use App\Models\Planificacion;
 use App\Models\Asignacion_plan;
 use Illuminate\Support\Facades\DB;
+use App\Models\Transaccion;
 
 class AsignacionPlanController extends Controller
 {
-    public function getParticipantes($id, Request $request)
+    public function showIndex()
     {
-        try {
-            $search = '%' . $request->search . '%';
-            $planificacion = Planificacion::findOrFail($id);
-            $asignaciones = $planificacion->asignaciones;
+        return view('RegistroAsignacion.home');
+    }
 
-            $residentes_participantes = $asignaciones->pluck('participante_id_asip')->toArray();
-            $residentes_participantes = Residente::with('usuario.roles')
+    public function index(Request $request)
+    {
+        $search = '%' . $request->search . '%';
+        try {
+
+            $asignaciones = Asignacion_plan::with(['planificacion', 'participante'])
                 ->where(function ($query) use ($search) {
-                    $query->where('nombre_rsdt', 'like', $search)
-                        ->orWhere('apellidop_rsdt', 'like', $search);
+                    $query->whereHas('planificacion', function ($query) use ($search) {
+                        $query->where("motivo_plan", 'LIKE', $search)
+                            ->orWhere('inicio_plan', 'LIKE', $search);
+                    })
+                        ->orWhereHas('participante', function ($query) use ($search) {
+                            $query->whereRaw("CONCAT(nombre_rsdt, ' ', apellidop_rsdt) LIKE ?", [$search])
+                                ->orWhere('ci_rsdt', 'LIKE', $search);
+                        })
+                        ->orWhere('id_asip', 'LIKE', $search);
                 })
-                ->whereIn('id_rsdt', $residentes_participantes)
-                ->get();
+                ->paginate($request->totalResultados);
+
+            foreach ($asignaciones as $asignacion) {
+                $totalPagado = DB::table('transacciones')
+                    ->where('plan_id_tr', $asignacion->planificacion->id_plan)
+                    ->where('residente_id_tr', $asignacion->participante->id_rsdt)
+                    ->where('tipo_tr', 'Embolso')
+                    ->sum('monto_tr');
+
+                $asignacion->totalPagado = number_format((float) $totalPagado, 2);
+                $asignacion->restante = number_format((float) $asignacion->planificacion->cuota_plan - $totalPagado, 2);
+            }
 
             $response = [
                 'state' => true,
                 'message' => 'Consulta exitosa.',
-                'data' => $residentes_participantes,
+                'data' => $asignaciones
+            ];
+        } catch (\Exception $e) {
+            $response = [
+                'state' => false,
+                'message' => 'Error en index: ' . $e->getMessage(),
+                'data' => []
+            ];
+        } finally {
+            return response()->json($response);
+        }
+    }
+
+    public function getParticipantes($id)
+    {
+        try {
+            $planificacion = Planificacion::findOrFail($id);
+            $asignaciones = $planificacion->asignaciones;
+
+            foreach ($asignaciones as $asignacion) {
+                $residente = $asignacion->participante;
+
+                $transacciones = Transaccion::where('plan_id_tr', $asignacion->planificacion->id_plan)
+                    ->where('residente_id_tr', $residente->id_rsdt)
+                    ->where('tipo_tr', 'Embolso')
+                    ->get();
+
+                if ($transacciones->count() > 0) {
+                    $totalPagado = $transacciones->sum('monto_tr');
+                } else {
+                    $totalPagado = 0;
+                }
+
+                $residente->usuario->getRoleNames();
+
+                $residente->totalPagado = number_format((float) $totalPagado, 2);
+                $cuotaPlan = $asignacion->planificacion->cuota_plan;
+                $residente->restante = number_format($cuotaPlan - $totalPagado, 2);
+            }
+
+            $response = [
+                'state' => true,
+                'message' => 'Consulta exitosa.',
+                'data' => $asignaciones,
                 'motivo' => $planificacion ? $planificacion->motivo_plan : null
             ];
         } catch (\Exception $e) {
             $response = [
                 'state' => false,
-                'message' => 'Error en getNoParticipantes: ' . $e->getMessage(),
+                'message' => 'Error en getParticipantes: ' . $e->getMessage(),
                 'data' => [],
                 'motivo' => null
             ];
@@ -70,6 +133,93 @@ class AsignacionPlanController extends Controller
         }
     }
 
+    public function store(Request $request)
+    {
+        try {
+            $asignacion = Asignacion_plan::create($request->all());
+
+            $response = [
+                'state' => true,
+                'message' => 'Se ha registrado una nueva asignación.',
+                'data' => $asignacion
+            ];
+        } catch (\Exception $e) {
+            $response = [
+                'state' => false,
+                'message' => 'Error en store: ' . $e->getMessage(),
+                'data' => null
+            ];
+        }
+
+        return response()->json($response);
+    }
+
+    public function show($id)
+    {
+        try {
+            $asignacion = Asignacion_plan::with('participante')->findOrFail($id);
+
+            $response = [
+                'state' => true,
+                'message' => 'Consulta exitosa.',
+                'data' => $asignacion
+            ];
+        } catch (\Exception $e) {
+            $response = [
+                'state' => false,
+                'message' => 'Error en show: ' . $e->getMessage(),
+                'data' => null
+            ];
+        }
+
+        return response()->json($response);
+    }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            $adquisicion = Asignacion_plan::findOrFail($id);
+
+            $adquisicion->participante_id_asip = $request->participante_id_asip;
+            $adquisicion->planificacion_id_asip = $request->planificacion_id_asip;
+
+            $adquisicion->save();
+
+            $response = [
+                'state' => true,
+                'message' => 'La asignación ha sido actualizada con éxito.',
+                'data' => $adquisicion
+            ];
+        } catch (\Exception $e) {
+            $response = [
+                'state' => false,
+                'message' => 'Error en update: ' . $e->getMessage(),
+                'data' => null
+            ];
+        }
+
+        return response()->json($response);
+    }
+
+    public function destroy($id)
+    {
+        try {
+            Asignacion_plan::findOrFail($id)->delete();
+
+            $response = [
+                'state' => true,
+                'message' => 'La asignación ha sido eliminada correctamente.'
+            ];
+        } catch (\Exception $e) {
+            $response = [
+                'state' => false,
+                'message' => 'Error en destroy: ' . $e->getMessage()
+            ];
+        }
+
+        return response()->json($response);
+    }
+
     public function storeParticipantes(Request $request)
     {
         DB::beginTransaction();
@@ -77,7 +227,6 @@ class AsignacionPlanController extends Controller
         try {
             $id = $request->idPlanificacion;
             $planificacion = Planificacion::findOrFail($id);
-            $pagoTotal = $planificacion->pago_plan;
             $asignaciones = $planificacion->asignaciones;
             $idsAsignacionesViejas = $asignaciones->pluck('participante_id_asip')->toArray();
             $idsNuevosParticipantes = $request->idsParticipantes;
@@ -87,15 +236,11 @@ class AsignacionPlanController extends Controller
                 $asignacion->delete();
             }
 
-            $cuota = count($idsParticipantes) > 0 ? $pagoTotal / count($idsParticipantes) : 0;
-
             $nuevasAsignaciones = [];
             foreach ($idsParticipantes as $idParticipante) {
                 $nuevasAsignaciones[] = [
                     'planificacion_id_asip' => $id,
-                    'participante_id_asip' => $idParticipante,
-                    'cuota_asip' => $cuota,
-                    'pagado_asip' => 0
+                    'participante_id_asip' => $idParticipante
                 ];
             }
 
@@ -144,9 +289,7 @@ class AsignacionPlanController extends Controller
             foreach ($idsParticipantes as $idParticipante) {
                 $asignacionesActualizadas[] = [
                     'planificacion_id_asip' => $id,
-                    'participante_id_asip' => $idParticipante,
-                    'cuota_asip' => $cuota,
-                    'pagado_asip' => 0
+                    'participante_id_asip' => $idParticipante
                 ];
             }
 

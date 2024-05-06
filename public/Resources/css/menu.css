@@ -98,9 +98,8 @@ body.dark{
 .sidebar .text{
     font-size: 14px;
     font-weight: 500;
-    white-space: nowrap;
     opacity: 1;
-    line-height: 14px;
+    line-height: 16px;
 }
 .sidebar.close .text{
     opacity: 0;
@@ -828,7 +827,7 @@ body.dark .form-custom::file-selector-button
 }
 .alerta
 {
-    position: fixed;
+    position: fixed !important;
     top: 0;
     right: 0;
     z-index: 1060;
@@ -840,6 +839,7 @@ body.dark .form-custom::file-selector-button
     color: #ffffff;
     font-weight: 500;
     line-height: 14px;
+    width: 350px;
 }
 .alert-success
 {
@@ -973,3 +973,16 @@ table .btn i
     background-color: var(--bs-body-bg);
 }
 /* End Region Boton de Opcines */
+
+.user-iconAP
+{
+    width: 40px;
+    height: 40px;
+    background-size: cover;
+    border-radius: 50%;
+    border: var(--bs-primary) 1px solid;
+}
+
+.select2-selection__rendered {
+    font-size: 12.6px;
+}

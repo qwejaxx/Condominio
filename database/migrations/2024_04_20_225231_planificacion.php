@@ -15,8 +15,8 @@ return new class extends Migration
             $table->increments('id_plan');
             $table->string('motivo_plan', 255);
             $table->string('descripcion_plan', 255);
-            $table->string('area_plan', 255)->nullable();
-            $table->decimal('pago_plan', 10, 2)->nullable();
+            $table->string('area_plan', 255);
+            $table->decimal('cuota_plan', 10, 2)->nullable();
             $table->dateTime('inicio_plan');
             $table->dateTime('fin_plan');
             $table->timestamps();

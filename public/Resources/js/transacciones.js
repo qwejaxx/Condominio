@@ -11,14 +11,15 @@ $(document).ready(function () {
     let urlShow = $('#url-show').val() + '/';
     let urlUpdate = urlShow;
     let urlDelete = urlShow;
+
+    let urlGetResidentes = $('#url-get-rep').val();
+    let urlGetPlanificaciones = $('#url-get-plan').val();
     //#endregion
 
     //#region Funciones Extras
-    function MostrarNotificacion(clase, texto, segundos)
-    {
+    function MostrarNotificacion(clase, texto, segundos) {
         let aux = $("#notificacion");
-        if (aux.html() != undefined)
-        {
+        if (aux.html() != undefined) {
             aux.remove();
         }
         let html = `
@@ -36,41 +37,139 @@ $(document).ready(function () {
         </div>`;
         $("body").append(html);
         let alerta = $("#notificacion");
-        setTimeout(function()
-        {
+        setTimeout(function () {
             alerta.alert("close");
         }, segundos * 1000);
     }
 
     function resetAllOnModal() {
-        $('#rsdtForm')[0].reset(); // Reiniciar Formulario
+        $('#rsdtForm')[0].reset();
         $('#rsdtForm').find(':input').prop('disabled', false);
         $('#botonesModal').removeClass('opacity-0');
-        $('#propietario_id_mas').val($('#propietario_id_mas option:first').val()).trigger('change');
-        tituloModal.text('Nuevo Parqueo');
+        $('#plan_id_tr').val($('#plan_id_tr option:first').val()).trigger('change');
+        $('#residente_id_tr').val($('#residente_id_tr option:first').val()).trigger('change');
+        $('#seccionFecha').addClass('d-none');
+        tituloModal.text('Registrar Visita');
         mensajeModal.html('');
         btnCrud.attr('name', 'store');
-        btnCrud.text('Agregar');
+        btnCrud.text('Registrar');
     }
+
+    function getResidentesOnSelect() {
+        let _token = $('meta[name="csrf-token"]').attr('content');
+        let select = $("#residente_id_tr");
+
+        $.ajax(
+            {
+                url: urlGetResidentes,
+                type: 'GET',
+                data: { _token: _token, totalResultados: 100 },
+                dataType: 'json',
+                success: function (response) {
+                    let Residentes = response.data;
+
+                    if (Residentes.length > 0) {
+                        select.empty();
+                        select.append($("<option>",
+                            {
+                                value: 0, text: 'Seleccionar Residente:', selected: true, disabled: true
+                            }));
+                        Residentes.forEach(Residente => {
+                            let idResidente = Residente.id_rsdt;
+                            let nombreResidente = Residente.nombre_rsdt + ' ' + Residente.apellidop_rsdt + ' ' + Residente.apellidom_rsdt;
+
+                            let option = `
+                                <option value='${idResidente}'>${nombreResidente}</option>
+                            `;
+                            select.append(option);
+                        });
+                    }
+                    else {
+                        select.empty();
+                        select.append($("<option>",
+                            {
+                                value: 0, text: 'No hay Residentes disponibles.', selected: true, disabled: true
+                            }));
+                    }
+                },
+                error: function (xhr, status, error) {
+                    MostrarNotificacion('danger', xhr.responseText, 5);
+                }
+            });
+    }
+
+    function getPlanificacionesOnSelect() {
+        let _token = $('meta[name="csrf-token"]').attr('content');
+        let select = $("#plan_id_tr");
+
+        $.ajax(
+            {
+                url: urlGetPlanificaciones,
+                type: 'GET',
+                data: { _token: _token, totalResultados: 100 },
+                dataType: 'json',
+                success: function (response) {
+                    let actividades = response.data.data;
+                    console.log(response);
+                    if (actividades.length > 0) {
+                        select.empty();
+                        select.append($("<option>",
+                            {
+                                value: 0, text: 'Seleccionar actividad:', selected: true, disabled: true
+                            }));
+                        actividades.forEach(actividad => {
+                            let idResidente = actividad.id_plan;
+                            let nombreResidente = actividad.motivo_plan;
+
+                            let option = `
+                                <option value='${idResidente}'>${nombreResidente}</option>
+                            `;
+                            select.append(option);
+                        });
+                    }
+                    else {
+                        select.empty();
+                        select.append($("<option>",
+                            {
+                                value: 0, text: 'No hay actividades disponibles.', selected: true, disabled: true
+                            }));
+                    }
+                },
+                error: function (xhr, status, error) {
+                    MostrarNotificacion('danger', xhr.responseText, 5);
+                }
+            });
+    }
+
+    function revisarSeleccion() {
+        let residente = $("#residente_id_tr").val();
+        let planificacion = $("#plan_id_tr").val();
+        if (residente !== null && residente !== '0' && planificacion !== null && planificacion !== '0') {
+            btnCrud.prop("disabled", false);
+        } else {
+            btnCrud.prop("disabled", true);
+        }
+    }
+
     //#endregion
 
     //#region Funciones Prepare
     function prepareSelect(id) {
-        tituloModal.text('Detalles sobre el Parqueo');
+        tituloModal.text('Detalles sobre la Transacción');
         $('#rsdtForm').find(':input').prop('disabled', true);
         $('#botonesModal').addClass('opacity-0');
         show(id);
     }
 
     function prepareEdit(id) {
-        tituloModal.text('Editar Parqueo');
+        tituloModal.text('Editar Transacción');
         $('#rsdtForm').find(':input').prop('disabled', false);
         show(id);
     }
 
     function prepareDelete(id) {
-        tituloModal.text('Eliminar Parqueo');
-        mensajeModal.html('El siguiente Parqueo se eliminará a continuación,<br>¿Está seguro?');
+        tituloModal.text('Eliminar Transacción');
+        mensajeModal.html('La siguiente transacción se eliminará a continuación,<br>¿Está seguro?');
         $('#rsdtForm').find(':input:not(button)').prop('disabled', true);
         show(id);
     }
@@ -178,24 +277,37 @@ $(document).ready(function () {
                     html = `
                     <thead class="table-secondary fw-semibold">
                         <tr>
-                            <th>ID</th>
-                            <th>CODIGO</th>
-                            <th>SLOTS</th>
-                            <th width="200">ACCIONES</th>
+                            <th class="align-middle" rowspan="2">ID</th>
+                            <th class="align-middle" rowspan="2">ACTIVIDAD</th>
+                            <th colspan="2">RESIDENTE</th>
+                            <th class="align-middle" rowspan="2">FECHA</th>
+                            <th class="align-middle" rowspan="2">TRANSACCIÓN</th>
+                            <th class="align-middle" rowspan="2">MONTO BS.</th>
+                            <th class="align-middle" rowspan="2" width="200">ACCIONES</th>
+                        </tr>
+                        <tr>
+                            <th>CI</th>
+                            <th>NOMBRE</th>
                         </tr>
                     </thead>
                     <tbody>
                 `;
-                    response.data.data.forEach(parqueo => {
+                    response.data.data.forEach(transaccion => {
+                        let residente = transaccion.residente;
+                        let planificacion = transaccion.planificacion;
                         html += `
                         <tr>
-                            <td>${parqueo.id_park}</td>
-                            <td>${parqueo.codigo_park}</td>
-                            <td>${parqueo.slots_park}</td>
+                            <td>${transaccion.id_tr}</td>
+                            <td>${planificacion.motivo_plan}</td>
+                            <td>${residente.ci_rsdt}</td>
+                            <td>${residente.nombre_rsdt} ${residente.apellidop_rsdt} ${residente.apellidom_rsdt}</td>
+                            <td>${transaccion.fecha_tr}</td>
+                            <td>${transaccion.tipo_tr}</td>
+                            <td>${transaccion.tipo_tr == 'Embolso' ? transaccion.monto_tr : '- ' + transaccion.monto_tr}</td>
                             <td>
-                                <button id='btnSelect' data-id="${parqueo.id_park}" class='btn p-0 btn-sm btn-info text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-magnifying-glass-plus'></i></button>
-                                <button id='btnEdit' data-id="${parqueo.id_park}" class='btn p-0 btn-sm btn-secondary text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-pen-to-square'></i></button>
-                                <button id='btnDelete' data-id="${parqueo.id_park}" class='btn p-0 btn-sm btn-primary' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-trash'></i></button>
+                                <button id='btnSelect' data-id="${transaccion.id_tr}" class='btn p-0 btn-sm btn-info text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-magnifying-glass-plus'></i></button>
+                                <button id='btnEdit' data-id="${transaccion.id_tr}" class='btn p-0 btn-sm btn-secondary text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-pen-to-square'></i></button>
+                                <button id='btnDelete' data-id="${transaccion.id_tr}" class='btn p-0 btn-sm btn-primary' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-trash'></i></button>
                             </td>
                         </tr>
                     `;
@@ -227,11 +339,10 @@ $(document).ready(function () {
             type: 'POST',
             data: formData,
             success: function (response) {
-                console.log(response);
                 if (response.state) {
                     MostrarNotificacion('success', response.message, 5);
-                    searchInput.val(response.data.id_park);
-                    index(response.data.id_park);
+                    searchInput.val(response.data.id_tr);
+                    index(response.data.id_tr);
                     modalMain.modal('hide');
                     setTimeout(function () {
                         searchInput.focus();
@@ -248,10 +359,15 @@ $(document).ready(function () {
     }
 
     function llenarFormulario(data) {
-        let parqueo = data;
-        $('#id_park').val(parqueo.id_park);
-        $('#codigo_park').val(parqueo.codigo_park);
-        $('#slots_park').val(parqueo.slots_park);
+        let transaccion = data;
+        $('#id_tr').val(transaccion.id_tr);
+        $('#plan_id_tr').val(transaccion.plan_id_tr).trigger('change');
+        $('#residente_id_tr').val(transaccion.residente_id_tr).trigger('change');
+        $('#monto_tr').val(transaccion.monto_tr);
+        $('#tipo_tr').val(transaccion.tipo_tr);
+        $('#seccionFecha').removeClass('d-none');
+        $('#fechaTransaccion').prop('disabled', true);
+        $('#fechaTransaccion').val(transaccion.fecha_tr);
     }
 
     function show(id) {
@@ -277,6 +393,7 @@ $(document).ready(function () {
 
     function update(id) {
         let formData = $('#rsdtForm').serialize();
+        console.log(urlUpdate, id);
 
         $.ajax({
             url: urlUpdate + id,
@@ -286,8 +403,8 @@ $(document).ready(function () {
                 console.log(response);
                 if (response.state) {
                     MostrarNotificacion('success', response.message, 5);
-                    searchInput.val(response.data.id_park);
-                    index(response.data.id_park);
+                    searchInput.val(response.data.id_tr);
+                    index(response.data.id_tr);
                     modalMain.modal('hide');
                     setTimeout(function () {
                         searchInput.focus();
@@ -297,7 +414,6 @@ $(document).ready(function () {
                 }
             },
             error: function (xhr, status, error) {
-                // Si hay un error en la solicitud AJAX, muestra el mensaje de error en la consola
                 MostrarNotificacion('danger', xhr.responseText, 5);
             }
         });
@@ -328,19 +444,11 @@ $(document).ready(function () {
     //#endregion
 
     //#region Interacción DOM
-    //#region Extras
-    //#region Select2 con Buscador
-    $("#propietario_id_mas").select2({
-        theme: "bootstrap-5",
-        selectionCssClass: "select2--small",
-        dropdownCssClass: "select2--small",
-        dropdownParent: $('#modalMain')
-    });
-    //#endregion
-    //#endregion
-
     //#region Funciones de Carga Inicial
     index();
+    getPlanificacionesOnSelect();
+    getResidentesOnSelect();
+    revisarSeleccion();
     //#endregion
 
     //#region Busqueda
@@ -353,11 +461,31 @@ $(document).ready(function () {
     });
     //#endregion
 
-    //#region Store
+    //#region Select2 con Buscador
+    $("#residente_id_tr").select2({
+        theme: "bootstrap-5",
+        selectionCssClass: "select2--small",
+        dropdownCssClass: "select2--small",
+        dropdownParent: $('#modalMain')
+    });
+
+    $("#plan_id_tr").select2({
+        theme: "bootstrap-5",
+        selectionCssClass: "select2--small",
+        dropdownCssClass: "select2--small",
+        dropdownParent: $('#modalMain')
+    });
+
+    $("#residente_id_tr, #plan_id_tr").on('change', function () {
+        revisarSeleccion();
+    });
+    //#endregion
+
+    //#region CRUD
     btnCrud.click(function (e) {
         e.preventDefault();
         let action = $(this).attr('name');
-        let id = $('#id_park').val();
+        let id = $('#id_tr').val();
         switch (action) {
             case "store":
                 {

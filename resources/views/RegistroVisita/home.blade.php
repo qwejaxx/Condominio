@@ -4,16 +4,18 @@
     <link href="{{ asset('Resources/css/select2-bootstrap-5-theme.css') }}" rel="stylesheet">
 @endsection
 @section('scriptsExtra')
-    <script src="{{ asset('Resources/js/visitante.js') }}"></script>
+    <script src="{{ asset('Resources/js/registroVisita.js') }}"></script>
     <script src="{{ asset('Resources/js/select2.min.js') }}"></script>
 @endsection
 @section('controllerLinks')
-    <input id="url-index" type="hidden" name="url-index" value="{{ route('indexVst') }}">
-    <input id="url-store" type="hidden" name="url-store" value="{{ route('storeVst') }}">
-    <input id="url-show" type="hidden" name="url-show" value="{{ route('Visitas') }}">
+    <input id="url-index" type="hidden" name="url-index" value="{{ route('indexRgVst') }}">
+    <input id="url-store" type="hidden" name="url-store" value="{{ route('storeRgVst') }}">
+    <input id="url-show" type="hidden" name="url-show" value="{{ route('ControlVisitas') }}">
+    <input id="url-get-res" type="hidden" name="url-get-res" value="{{ route('getRes') }}">
+    <input id="url-get-vis" type="hidden" name="url-get-vis" value="{{ route('getVis') }}">
 @endsection
 @section('Titulo')
-    <i class="fa-solid fa-list me-2"></i>Lista de Visitantes
+    <i class="fa-solid fa-list me-2"></i>Registro de Visitas
 @endsection
 @section('Contenido')
     <div class="row justify-content-between">
@@ -27,16 +29,16 @@
         <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 col-xxl-3 d-flex justify-content-end">
             <button class="btn btn-secondary btn-sm mb-3" type="button" id="btnAgregar" data-bs-toggle="modal"
                 data-bs-target="#modalMain">
-                <i class="fa-solid fa-plus me-2"></i>Nuevo Visitante
+                <i class="fa-solid fa-plus me-2"></i>Nueva Visita
             </button>
             <div class="modal fade" id="modalMain" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
                 aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-custom">
-                        <input id="id_rsdt" type="hidden" name="id_rsdt">
                         <form id="rsdtForm">
+                            <input id="id_vis" type="hidden" name="id_vis">
                             <div class="header">
-                                <div><i class="fa-solid fa-sitemap me-2"></i><span id="modal-titulo">Nuevo Residente</span>
+                                <div><i class="fa-solid fa-sitemap me-2"></i><span id="modal-titulo">Registrar Visita</span>
                                 </div>
                                 <i class="fa-solid fa-xmark modal-close" data-bs-dismiss="modal"></i>
                             </div>
@@ -44,37 +46,20 @@
                                 <div class="text-center" id="modal-mensaje"></div>
                                 @csrf
                                 <div class="d-flex flex-column mb-1">
-                                    <label for="ci_rsdt" class="label-form">CI:</label>
-                                    <input type="text" class="form-control form-control-sm" id="ci_rsdt"
-                                        name="ci_rsdt">
+                                    <label for="visitante_id_vis" class="label-form">Visitante:</label>
+                                    <select class="form-select form-select-sm" id="visitante_id_vis"
+                                        name="visitante_id_vis">
+                                    </select>
                                 </div>
                                 <div class="d-flex flex-column mb-1">
-                                    <label for="nombre_rsdt" class="label-form">Nombre:</label>
-                                    <input type="text" class="form-control form-control-sm" id="nombre_rsdt"
-                                        name="nombre_rsdt">
+                                    <label for="visitado_id_vis" class="label-form">Residente Visitado:</label>
+                                    <select class="form-select form-select-sm" id="visitado_id_vis" name="visitado_id_vis">
+                                    </select>
                                 </div>
-                                <div class="d-flex flex-column mb-1">
-                                    <label for="apellidop_rsdt" class="label-form">Apellido
-                                        Paterno:</label>
-                                    <input type="text" class="form-control form-control-sm" id="apellidop_rsdt"
-                                        name="apellidop_rsdt">
-                                </div>
-                                <div class="d-flex flex-column mb-1">
-                                    <label for="apellidom_rsdt" class="label-form">Apellido
-                                        Materno:</label>
-                                    <input type="text" class="form-control form-control-sm" id="apellidom_rsdt"
-                                        name="apellidom_rsdt">
-                                </div>
-                                <div class="d-flex flex-column mb-1">
-                                    <label for="fechanac_rsdt" class="label-form">Fecha de
-                                        Nacimiento:</label>
-                                    <input type="date" class="form-control form-control-sm" id="fechanac_rsdt"
-                                        name="fechanac_rsdt">
-                                </div>
-                                <div class="d-flex flex-column mb-1">
-                                    <label for="telefono_rsdt" class="label-form">Teléfono:</label>
-                                    <input type="text" class="form-control form-control-sm" id="telefono_rsdt"
-                                        name="telefono_rsdt">
+                                <div id="seccionFecha" class="d-flex flex-column mb-1 d-none">
+                                    <label for="fecha_visita" class="label-form">Fecha:</label>
+                                    <input type="datetime-local" class="form-control form-control-sm" id="fecha_visita"
+                                        name="fecha_visita">
                                 </div>
                             </div>
                             <div class="footer">
@@ -82,7 +67,7 @@
                                     <button type="button" class="btn btn-sm btn-secondary"
                                         data-bs-dismiss="modal">Cancelar</button>
                                     <button type="submit" name="store" id="btnCrud"
-                                        class="btn btn-sm btn-outline-light">Agregar</button>
+                                        class="btn btn-sm btn-outline-light">Registrar</button>
                                 </div>
                             </div>
                         </form>
@@ -133,17 +118,18 @@
             let urlShow = $('#url-show').val() + '/';
             let urlUpdate = urlShow;
             let urlDelete = urlShow;
+
+            let urlGetResidentes = $('#url-get-res').val();
+            let urlGetVisitantes = $('#url-get-vis').val();
             //#endregion
 
             //#region Funciones Extras
-            function MostrarNotificacion(clase, texto, segundos)
-    {
-        let aux = $("#notificacion");
-        if (aux.html() != undefined)
-        {
-            aux.remove();
-        }
-        let html = `
+            function MostrarNotificacion(clase, texto, segundos) {
+                let aux = $("#notificacion");
+                if (aux.html() != undefined) {
+                    aux.remove();
+                }
+                let html = `
         <div id="notificacion" class="alerta show fade alert p-0 alert-dismissible alert-${clase}">
             <div class="d-flex justify-content-between align-items-center py-1 px-2 gap-2">
                 <div class="text-justify" style="font-size: 12.6px">Notificación.</div>
@@ -156,43 +142,156 @@
                 <div class="text-justify alerta-text">` + texto + `</div>
             </div>
         </div>`;
-        $("body").append(html);
-        let alerta = $("#notificacion");
-        setTimeout(function()
-        {
-            alerta.alert("close");
-        }, segundos * 1000);
-    }
+                $("body").append(html);
+                let alerta = $("#notificacion");
+                setTimeout(function() {
+                    alerta.alert("close");
+                }, segundos * 1000);
+            }
 
             function resetAllOnModal() {
-                $('#rsdtForm')[0].reset(); // Reiniciar Formulario
+                $('#rsdtForm')[0].reset();
                 $('#rsdtForm').find(':input').prop('disabled', false);
                 $('#botonesModal').removeClass('opacity-0');
-                tituloModal.text('Nuevo Visitante');
+                $('#visitante_id_vis').val($('#visitante_id_vis option:first').val()).trigger('change');
+                $('#visitado_id_vis').val($('#visitado_id_vis option:first').val()).trigger('change');
+                $('#seccionFecha').addClass('d-none');
+                tituloModal.text('Registrar Visita');
                 mensajeModal.html('');
                 btnCrud.attr('name', 'store');
-                btnCrud.text('Agregar');
+                btnCrud.text('Registrar');
             }
+
+            function getResidentesOnSelect() {
+                let _token = $('meta[name="csrf-token"]').attr('content');
+                let select = $("#visitado_id_vis");
+
+                $.ajax({
+                    url: urlGetResidentes,
+                    type: 'GET',
+                    data: {
+                        _token: _token
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        let Residentes = response.data;
+
+                        if (Residentes.length > 0) {
+                            select.empty();
+                            select.append($("<option>", {
+                                value: 0,
+                                text: 'Seleccionar Residente:',
+                                selected: true,
+                                disabled: true
+                            }));
+                            Residentes.forEach(Residente => {
+                                let idResidente = Residente.id_rsdt;
+                                let nombreResidente = Residente.nombre_rsdt + ' ' + Residente
+                                    .apellidop_rsdt + ' ' + Residente.apellidom_rsdt;
+
+                                let option = `
+                                    <option value='${idResidente}'>${nombreResidente}</option>
+                                `;
+                                select.append(option);
+                            });
+                        } else {
+                            select.empty();
+                            select.append($("<option>", {
+                                value: 0,
+                                text: 'No hay Residentes disponibles.',
+                                selected: true,
+                                disabled: true
+                            }));
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        MostrarNotificacion('danger', xhr.responseText, 5);
+                    }
+                });
+            }
+
+            function getVisitantesOnSelect() {
+                let _token = $('meta[name="csrf-token"]').attr('content');
+                let select = $("#visitante_id_vis");
+
+                $.ajax({
+                    url: urlGetVisitantes,
+                    type: 'GET',
+                    data: {
+                        _token: _token
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        let Residentes = response.data;
+
+                        if (Residentes.length > 0) {
+                            select.empty();
+                            select.append($("<option>", {
+                                value: 0,
+                                text: 'Seleccionar Visitante:',
+                                selected: true,
+                                disabled: true
+                            }));
+                            Residentes.forEach(Residente => {
+                                let idResidente = Residente.id_rsdt;
+                                let nombreResidente = Residente.nombre_rsdt + ' ' + Residente
+                                    .apellidop_rsdt + ' ' + Residente.apellidom_rsdt;
+
+                                let option = `
+                                    <option value='${idResidente}'>${nombreResidente}</option>
+                                `;
+                                select.append(option);
+                            });
+                        } else {
+                            select.empty();
+                            select.append($("<option>", {
+                                value: 0,
+                                text: 'No hay visitantes disponibles.',
+                                selected: true,
+                                disabled: true
+                            }));
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        MostrarNotificacion('danger', xhr.responseText, 5);
+                    }
+                });
+            }
+
+            function revisarSeleccion() {
+                let visitado = $("#visitado_id_vis").val();
+                let visitante = $("#visitante_id_vis").val();
+                if (visitado !== null && visitado !== '0' && visitante !== null && visitante !== '0') {
+                    btnCrud.prop("disabled", false);
+                } else {
+                    btnCrud.prop("disabled", true);
+                }
+            }
+
             //#endregion
 
             //#region Funciones Prepare
             function prepareSelect(id) {
-                tituloModal.text('Detalles sobre el Visitante');
+                tituloModal.text('Detalles sobre la Visista');
                 $('#rsdtForm').find(':input').prop('disabled', true);
+                $('#password').attr('type', 'password');
                 $('#botonesModal').addClass('opacity-0');
                 show(id);
             }
 
             function prepareEdit(id) {
-                tituloModal.text('Editar Visitante');
+                tituloModal.text('Editar Visita');
                 $('#rsdtForm').find(':input').prop('disabled', false);
+                $('#password').attr('type', 'password');
                 show(id);
             }
 
             function prepareDelete(id) {
-                tituloModal.text('Eliminar Visitante');
-                mensajeModal.html('El siguiente visitante se eliminará a continuación,<br>¿Está seguro?');
+                tituloModal.text('Eliminar Visita');
+                mensajeModal.html('La siguiente visita se eliminará a continuación,<br>¿Está seguro?');
                 $('#rsdtForm').find(':input:not(button)').prop('disabled', true);
+
+                $('#password').attr('type', 'password');
                 show(id);
             }
             //#endregion
@@ -308,33 +407,43 @@
                         if (response.data.data.length > 0) {
                             error.html('');
                             html = `
-                    <thead class="table-secondary fw-semibold">
-                        <tr>
-                            <th>CI</th>
-                            <th>NOMBRE</th>
-                            <th>FECHA DE NACIMIENTO</th>
-                            <th>TELÉFONO</th>
-                            <th width="200">ACCIONES</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                `;
-                            response.data.data.forEach(personal => {
-                                html += `
-                        <tr>
-                            <td>${personal.ci_rsdt}</td>
-                            <td>${personal.nombre_rsdt} ${personal.apellidop_rsdt} ${personal.apellidom_rsdt}</td>
-                            <td>${personal.fechanac_rsdt}</td>
-                            <td>${personal.telefono_rsdt}</td>
-                            <td>
-                                <button id='btnSelect' data-id="${personal.id_rsdt}" class='btn p-0 btn-sm btn-info text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-magnifying-glass-plus'></i></button>
-                                <button id='btnEdit' data-id="${personal.id_rsdt}" class='btn p-0 btn-sm btn-secondary text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-pen-to-square'></i></button>
-                                @role('Administrador')
-                                <button id='btnDelete' data-id="${personal.id_rsdt}" class='btn p-0 btn-sm btn-primary' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-trash'></i></button>
-                                @endrole
-                            </td>
-                        </tr>
+                        <thead class="table-secondary fw-semibold">
+                            <tr>
+                                <th class="align-middle" rowspan="2">ID</th>
+                                <th colspan="2">VISITANTE</th>
+                                <th colspan="2">VISITADO</th>
+                                <th class="align-middle" rowspan="2">FECHA DE VISITA</th>
+                                <th class="align-middle" rowspan="2" width="200">ACCIONES</th>
+                            </tr>
+                            <tr>
+                                <th>CI</th>
+                                <th>NOMBRE</th>
+                                <th>CI</th>
+                                <th>NOMBRE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                     `;
+                            response.data.data.forEach(regvisita => {
+                                let visitante = regvisita.visitante;
+                                let visitado = regvisita.visitado;
+                                html += `
+                            <tr>
+                                <td>${regvisita.id_vis}</td>
+                                <td>${visitante.ci_rsdt}</td>
+                                <td>${visitante.nombre_rsdt} ${visitante.apellidop_rsdt} ${visitante.apellidom_rsdt}</td>
+                                <td>${visitado.ci_rsdt}</td>
+                                <td>${visitado.nombre_rsdt} ${visitado.apellidop_rsdt} ${visitado.apellidom_rsdt}</td>
+                                <td>${regvisita.fecha_vis}</td>
+                                <td>
+                                    <button id='btnSelect' data-id="${regvisita.id_vis}" class='btn p-0 btn-sm btn-info text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-magnifying-glass-plus'></i></button>
+                                    <button id='btnEdit' data-id="${regvisita.id_vis}" class='btn p-0 btn-sm btn-secondary text-white' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-pen-to-square'></i></button>
+                                    @role('Administrador')
+                                    <button id='btnDelete' data-id="${regvisita.id_vis}" class='btn p-0 btn-sm btn-primary' type='button' data-bs-toggle='modal' data-bs-target='#modalMain'><i class='fa-solid fa-trash'></i></button>
+                                    @endrole
+                                </td>
+                            </tr>
+                        `;
                             });
                             html += `</tbody>`;
                             tableIndex.append(html);
@@ -366,8 +475,8 @@
                     success: function(response) {
                         if (response.state) {
                             MostrarNotificacion('success', response.message, 5);
-                            searchInput.val(response.data.ci_rsdt);
-                            index(response.data.ci_rsdt);
+                            searchInput.val(response.data.id_vis);
+                            index(response.data.id_vis);
                             modalMain.modal('hide');
                             setTimeout(function() {
                                 searchInput.focus();
@@ -383,14 +492,13 @@
             }
 
             function llenarFormulario(data) {
-                let residente = data;
-                $('#id_rsdt').val(residente.id_rsdt);
-                $('#ci_rsdt').val(residente.ci_rsdt);
-                $('#nombre_rsdt').val(residente.nombre_rsdt);
-                $('#apellidop_rsdt').val(residente.apellidop_rsdt);
-                $('#apellidom_rsdt').val(residente.apellidom_rsdt);
-                $('#fechanac_rsdt').val(residente.fechanac_rsdt);
-                $('#telefono_rsdt').val(residente.telefono_rsdt);
+                let regvisita = data;
+                $('#id_vis').val(regvisita.id_vis);
+                $('#visitante_id_vis').val(regvisita.visitante_id_vis).trigger('change');
+                $('#visitado_id_vis').val(regvisita.visitado_id_vis).trigger('change');
+                $('#seccionFecha').removeClass('d-none');
+                $('#fecha_visita').prop('disabled', true);
+                $('#fecha_visita').val(regvisita.fecha_vis);
             }
 
             function show(id) {
@@ -426,8 +534,8 @@
                     success: function(response) {
                         if (response.state) {
                             MostrarNotificacion('success', response.message, 5);
-                            searchInput.val(response.data.ci_rsdt);
-                            index(response.data.ci_rsdt);
+                            searchInput.val(response.data.id_vis);
+                            index(response.data.id_vis);
                             modalMain.modal('hide');
                             setTimeout(function() {
                                 searchInput.focus();
@@ -437,7 +545,6 @@
                         }
                     },
                     error: function(xhr, status, error) {
-                        // Si hay un error en la solicitud AJAX, muestra el mensaje de error en la consola
                         MostrarNotificacion('danger', xhr.responseText, 5);
                     }
                 });
@@ -472,6 +579,9 @@
             //#region Interacción DOM
             //#region Funciones de Carga Inicial
             index();
+            getVisitantesOnSelect();
+            getResidentesOnSelect();
+            revisarSeleccion();
             //#endregion
 
             //#region Busqueda
@@ -484,11 +594,31 @@
             });
             //#endregion
 
-            //#region Store
+            //#region Select2 con Buscador
+            $("#visitado_id_vis").select2({
+                theme: "bootstrap-5",
+                selectionCssClass: "select2--small",
+                dropdownCssClass: "select2--small",
+                dropdownParent: $('#modalMain')
+            });
+
+            $("#visitante_id_vis").select2({
+                theme: "bootstrap-5",
+                selectionCssClass: "select2--small",
+                dropdownCssClass: "select2--small",
+                dropdownParent: $('#modalMain')
+            });
+
+            $("#visitado_id_vis, #visitante_id_vis").on('change', function() {
+                revisarSeleccion();
+            });
+            //#endregion
+
+            //#region CRUD
             btnCrud.click(function(e) {
                 e.preventDefault();
                 let action = $(this).attr('name');
-                let id = $('#id_rsdt').val();
+                let id = $('#id_vis').val();
                 switch (action) {
                     case "store": {
                         store();

@@ -17,7 +17,7 @@ class Planificacion extends Model
         'motivo_plan',
         'descripcion_plan',
         'area_plan',
-        'pago_plan',
+        'cuota_plan',
         'inicio_plan',
         'fin_plan',
     ];
@@ -25,5 +25,10 @@ class Planificacion extends Model
     public function asignaciones()
     {
         return $this->hasMany(Asignacion_Plan::class, 'planificacion_id_asip');
+    }
+
+    public function transacciones()
+    {
+        return $this->hasMany(Transaccion::class, 'plan_id_tr');
     }
 }

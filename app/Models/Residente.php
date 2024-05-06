@@ -58,4 +58,9 @@ class Residente extends Model
     {
         return $this->hasMany(Asignacion_plan::class, 'participante_id_asip');
     }
+
+    public function transacciones()
+    {
+        return $this->hasMany(Transaccion::class, 'residente_id_tr');
+    }
 }

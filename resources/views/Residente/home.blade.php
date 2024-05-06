@@ -81,8 +81,7 @@
                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                     <label class="form-check-label" for="es_representante" style="line-height: 1;">¿Es
                                         representante familiar?</label>
-                                    <div
-                                        class="form-check p-0 form-switch mb-0 d-flex justify-content-end align-items-center">
+                                    <div class="form-check p-0 form-switch mb-0 d-flex justify-content-end align-items-center">
                                         <input id="es_representante" name="es_representante" class="form-check-input mt-0"
                                             type="checkbox" role="switch">
                                     </div>
@@ -156,22 +155,10 @@
         <div class="table-responsive rounded shadow-sm">
             <table id="tabla"
                 class="table text-nowrap table-sm table-striped table-bordered text-center align-middle table-hover m-0">
-                <thead class="table-secondary">
-                    <tr>
-                        <th>CI</th>
-                        <th>NOMBRE</th>
-                        <th>FECHA DE NACIMIENTO</th>
-                        <th>TELÉFONO</th>
-                        <th>REPRESENTANTE</th>
-                        <th width="250">ACCIONES</th>
-                    </tr>
-                </thead>
-                <tbody id="index-tbody">
-                </tbody>
             </table>
         </div>
     </div>
-    <div id="seccionTotalResultados" class="mt-3">
+    <div id="seccionTotalResultados" class="mt-3 d-none">
         <nav class="row g-3 justify-content-between">
             <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 col-xxl-3">
                 <ul id="pagination-container"

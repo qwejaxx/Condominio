@@ -5,7 +5,6 @@ $(document).ready(function () {
     let mensajeModal = $('#modal-mensaje');
     let searchInput = $('#search');
     let btnCrud = $('#btnCrud');
-    /* let tableIndex = $('#tabla'); */
     let cardsDep = $('#cardsDep');
     let urlIndex = $('#url-index').val();
     let urlStore = $('#url-store').val();
@@ -15,6 +14,31 @@ $(document).ready(function () {
     //#endregion
 
     //#region Funciones Extras
+    function MostrarNotificacion(clase, texto, segundos) {
+        let aux = $("#notificacion");
+        if (aux.html() != undefined) {
+            aux.remove();
+        }
+        let html = `
+        <div id="notificacion" class="alerta show fade alert p-0 alert-dismissible alert-${clase}">
+            <div class="d-flex justify-content-between align-items-center py-1 px-2 gap-2">
+                <div class="text-justify" style="font-size: 12.6px">Notificación.</div>
+                <button class="btn btn-sm p-0 text-${clase}" id="btnCerrarAlerta" type="button" data-bs-dismiss="alert" data-bs-target="#notificacion">
+                    <i class="fa-solid fa-xmark text-dark"></i>
+                </button>
+            </div>
+            <hr class="m-0">
+            <div class="py-1 px-2">
+                <div class="text-justify alerta-text">` + texto + `</div>
+            </div>
+        </div>`;
+        $("body").append(html);
+        let alerta = $("#notificacion");
+        setTimeout(function () {
+            alerta.alert("close");
+        }, segundos * 1000);
+    }
+
     function getParqueosOnSelect() {
         let _token = $('meta[name="csrf-token"]').attr('content');
         let select = $("#parqueo_id_dpto");
@@ -28,9 +52,12 @@ $(document).ready(function () {
                 dataType: 'json',
                 success: function (response) {
                     let parqueos = response.data;
-
+                    select.empty();
+                    select.append($("<option>",
+                        {
+                            value: 0, text: "Sin Parqueo"
+                        }));
                     if (parqueos.length > 0) {
-                        select.empty();
                         parqueos.forEach(parqueo => {
                             select.append($("<option>",
                                 {
@@ -38,12 +65,9 @@ $(document).ready(function () {
                                 }));
                         });
                     }
-                    else {
-                        console.log("No hay resultados");
-                    }
                 },
                 error: function (xhr, status, error) {
-                    console.log("Error en la solicitud AJAX: " + error);
+                    MostrarNotificacion('danger', xhr.responseText, 5);
                 }
             });
     }
@@ -52,14 +76,12 @@ $(document).ready(function () {
         $('#rsdtForm')[0].reset(); // Reiniciar Formulario
         $('#rsdtForm').find(':input').prop('disabled', false);
         $('#botonesModal').removeClass('opacity-0');
-        $('#campos_propietario').addClass('show');
         $('#campos_parqueo').removeClass('show');
-        $('#rep_fam_id_rsdt').val($('#rep_fam_id_rsdt option:first').val()).trigger('change');
-        tituloModal.text('Nuevo Residente');
+        tituloModal.text('Nuevo Departamento');
         mensajeModal.html('');
         btnCrud.attr('name', 'store');
         btnCrud.text('Agregar');
-        $('seccionAdquisiciones').addClass('d-none')
+        $('#seccionAdquisiciones').addClass('d-none')
     }
     //#endregion
 
@@ -183,7 +205,6 @@ $(document).ready(function () {
             success: function (response) {
                 cardsDep.empty();
                 if (response.data.data.length > 0) {
-                    console.log(response);
                     error.html('');
                     html = ``;
                     response.data.data.forEach(departamento => {
@@ -263,7 +284,7 @@ $(document).ready(function () {
                 }
             },
             error: function (xhr, status, error) {
-                console.error(xhr.responseText);
+                MostrarNotificacion('danger', xhr.responseText, 5);
             }
         });
     }
@@ -276,8 +297,8 @@ $(document).ready(function () {
             type: 'POST',
             data: formData,
             success: function (response) {
-                console.log(response);
                 if (response.state) {
+                    MostrarNotificacion('success', response.message, 5);
                     searchInput.val(response.data.codigo_dpto);
                     index(response.data.codigo_dpto);
                     modalMain.modal('hide');
@@ -286,23 +307,29 @@ $(document).ready(function () {
                     }, 700);
                 }
                 else {
-                    console.log(response.message);
+                    MostrarNotificacion('danger', response.message, 5);
                 }
             },
             error: function (xhr, status, error) {
-                console.error(xhr.responseText);
+                MostrarNotificacion('danger', xhr.responseText, 5);
             }
         });
     }
 
     function llenarFormulario(data) {
         let departamento = data;
-        console.log(departamento);
         $('#id_dpto').val(departamento.id_dpto);
         $('#codigo_dpto').val(departamento.codigo_dpto);
         $('#precio_dpto').val(departamento.precio_dpto);
         $('#precioa_dpto').val(departamento.precioa_dpto);
-        $('#parqueo_id_dpto').val(departamento.parqueo_id_dpto);
+        if (departamento.parqueo !== null) {
+            let parqueo = departamento.parqueo;
+            let select = $('#parqueo_id_dpto');
+            select.append($("<option>",
+                {
+                    value: parqueo.id_park, text: parqueo.codigo_park, selected: true
+                }));
+        }
         if (btnCrud.attr('name') == 'show') {
             let adquisiciones = departamento.adquisiciones;
             if (adquisiciones.length > 0) {
@@ -337,11 +364,11 @@ $(document).ready(function () {
                     llenarFormulario(response.data);
                     modalMain.modal('show');
                 } else {
-                    console.error(response.message);
+                    MostrarNotificacion('danger', response.message, 5);;
                 }
             },
             error: function (xhr, status, error) {
-                console.error(xhr.responseText);
+                MostrarNotificacion('danger', xhr.responseText, 5);
             }
         });
     }
@@ -356,8 +383,7 @@ $(document).ready(function () {
             success: function (response) {
                 console.log(response);
                 if (response.state) {
-                    // Actualización exitosa
-                    console.log("¡Actualización exitosa!");
+                    MostrarNotificacion('success', response.message, 5);
                     searchInput.val(response.data.codigo_dpto);
                     index(response.data.codigo_dpto);
                     modalMain.modal('hide');
@@ -365,12 +391,12 @@ $(document).ready(function () {
                         searchInput.focus();
                     }, 700);
                 } else {
-                    console.error(response.message);
+                    MostrarNotificacion('danger', response.message, 5);;
                 }
             },
             error: function (xhr, status, error) {
                 // Si hay un error en la solicitud AJAX, muestra el mensaje de error en la consola
-                console.error(xhr.responseText);
+                MostrarNotificacion('danger', xhr.responseText, 5);
             }
         });
     }
@@ -384,16 +410,16 @@ $(document).ready(function () {
             data: { _token: _token },
             success: function (response) {
                 if (response.state) {
-                    console.log(response.message);
+                    MostrarNotificacion('success', response.message, 5);
                     searchInput.val('');
                     index();
                     modalMain.modal('hide');
                 } else {
-                    console.error(response.message);
+                    MostrarNotificacion('danger', response.message, 5);;
                 }
             },
             error: function (xhr, status, error) {
-                console.error(xhr.responseText);
+                MostrarNotificacion('danger', xhr.responseText, 5);
             }
         });
     }
@@ -415,6 +441,10 @@ $(document).ready(function () {
     //#endregion
 
     //#region Store
+    $('#btnAgregar').on('click', function () {
+        getParqueosOnSelect();
+    });
+
     btnCrud.click(function (e) {
         e.preventDefault();
         let action = $(this).attr('name');
@@ -445,6 +475,7 @@ $(document).ready(function () {
         let id = $(this).data('id');
         btnCrud.attr('name', 'show');
         btnCrud.text('Show');
+        getParqueosOnSelect();
         prepareSelect(id);
     });
 
@@ -452,6 +483,7 @@ $(document).ready(function () {
         let id = $(this).data('id');
         btnCrud.attr('name', 'edit');
         btnCrud.text('Editar');
+        getParqueosOnSelect();
         prepareEdit(id);
     });
 
@@ -459,13 +491,14 @@ $(document).ready(function () {
         let id = $(this).data('id');
         btnCrud.attr('name', 'delete');
         btnCrud.text('Eliminar');
+        getParqueosOnSelect();
         prepareDelete(id);
     });
     //#endregion
 
     //#region Configuracion en Modales
     $("#modalMain").on("show.bs.modal", function () {
-        getParqueosOnSelect();
+
     });
 
     modalMain.on('hidden.bs.modal', function () {
